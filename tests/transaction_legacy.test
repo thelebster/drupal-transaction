@@ -1,0 +1,206 @@
+<?php
+// $Id$
+/**
+ * @file Contains the test for the pressflow_transaction legacy API
+ * provided in the transaction module (formerly pressflow_transaction).
+ */
+ 
+/**
+ * Implements the test cases for the pressflow_transaction legacy API.
+ */
+class TransactionLegacyAPITest extends DrupalTestCase 
+{
+  /** Sample data to populate the test table with. */
+  private static $test_data = array(
+    array('John',     'Smith',    1),
+    array('Herbert',  'Wells',    0),
+    array('Amadeus',  'Mozart',   4),
+    array('John',     'Stewart',  0),
+    array('Sara',     'Smith',    0),
+    array('Jennifer', 'Saunders', 3),
+    array('Neko',     'Case',     1),
+    array('Albert',   'Einstein', 2),
+    array('Frank',    'Herbert',  9),
+    array('Geddy',    'Lee',      0),
+    array('Joel',     'Hartford', 0),
+  );
+
+  /** The test table name. */
+  private static $table = '{simpletest_transaction}';
+
+  /** The first sequence name */
+  private static $sequence1 = '{simpletest_transaction}_id';
+  
+  /** The second sequence name */
+  private static $sequence2 = '{simpletest_transaction}_idprime';
+
+  /**
+   * Provides information about this test.
+   *
+   * @return array An array of test information.
+   */
+  public function get_info() {
+    return array(
+      'name'  => t('transaction.module Legacy API Test'),
+      'desc'  => t('Tests pressflow_transaction legacy API functionality.'),
+      'group' => 'Pressflow Core',
+    );
+  }
+
+
+  /**
+   * Initialize the test.
+   */
+  public function setUp() {
+    parent::setUp();
+
+    // Create a dummy table to test transactions on.
+    db_query('DROP TABLE IF EXISTS {simpletest_transaction}');
+    db_query('CREATE TABLE {simpletest_transaction} (
+                  id int(10) UNSIGNED NOT NULL,
+                  first_name varchar(32),
+                  last_name varchar(32),
+                  status tinyint(1) UNSIGNED NOT NULL,
+                  PRIMARY KEY (id)
+              ) /*!40100 DEFAULT CHARACTER SET UTF8 */');
+    
+    // Populate the dummy table with data.
+    foreach (self::$test_data as $row) {
+      $id = db_next_id('{simpletest_transaction}_id');
+      db_query("INSERT INTO {simpletest_transaction}
+                    (id, first_name, last_name, status)
+                VALUES (%d, '%s', '%s', %d)",
+                $id, $row[0], $row[1], $row[2]);
+    }
+  }
+
+
+  /**
+   * Clean up after ourselves.
+   */
+  public function tearDown() {
+    db_query('DROP TABLE IF EXISTS {simpletest_transaction}');
+    db_query("DELETE FROM {sequences} WHERE name = '%s'", db_prefix_tables(self::$sequence1));
+    db_query("DELETE FROM {sequences} WHERE name = '%s'", db_prefix_tables(self::$sequence2));
+    parent::tearDown();
+  }
+
+
+  /**
+   * Verify the operation of pressflow_transaction_db_next_id().
+   */
+  public function testTransactionDBNextID() {
+    // First check that it works correctly on the sequence created in setUp().
+    $current = db_result(db_query("SELECT id FROM {sequences} WHERE name = '%s'", db_prefix_tables(self::$sequence1)));
+    $test    = pressflow_transaction_db_next_id(self::$sequence1);
+    $msg     = t('Next ID on existing sequence : %s');
+    $this->assertEqual($test, ($current + 1), $msg);
+    
+    // Now create a new sequence and verify it was created.
+    $second = pressflow_transaction_db_next_id(self::$sequence2);
+    $test = db_next_id(self::$sequence2);
+    $msg = t('Next ID on new sequence : %s');
+    $this->assertEqual($test, 2, $msg);
+  }
+
+
+  /**
+   * Verify the behavior of pressflow_transaction_update() for new rows.
+   */
+  public function testTransactionUpdateNew() {
+    // First insert a new row and verify by query.
+    pressflow_transaction_update(self::$table, 'id', array('first_name' => 'Sammy',
+                                                           'last_name'  => 'Davis',
+                                                           'status'     => 1)
+                                );
+    $test = db_result(db_query('SELECT status FROM ' . self::$table . 
+                               " WHERE first_name = 'Sammy' AND last_name = 'Davis'")
+                      );
+    $msg  = t('Inserting new row with pressflow_transaction_update : %s');
+    $this->assertEqual($test, 1, $msg);
+  }
+  
+  
+  /**
+   * Verify the behavior of pressflow_transaction_update() for existing rows.
+   */
+  public function testTransactionUpdateExisting() {  
+    // Next update an existing row and verify by query.
+    pressflow_transaction_update(self::$table, array('first_name', 'last_name'), 
+                                 array('first_name' => 'John', 
+                                       'last_name'  => 'Smith',
+                                       'status'     => 9)
+                                 );
+    $test = db_result(db_query('SELECT status FROM ' . self::$table .
+                               " WHERE first_name = 'John' AND last_name = 'Smith'"));
+    $msg = t('Updating existing row with pressflow_transaction_update : %s');
+    $this->assertEqual($test, 9, $msg); 
+  }
+
+
+  /**
+   * Verify that rollbacks behave correctly.
+   */
+  public function testTransactionRollBack() {
+    // Get the id from the sequence table before we start
+    $seq   = db_result(db_query("SELECT id FROM {sequences} WHERE name = '%s'", db_prefix_tables(self::$sequence1)));
+    $count = db_result(db_query('SELECT COUNT(*) FROM ' . self::$table));
+    
+    $txn1 = new pressflow_transaction();
+    pressflow_transaction_update(self::$table, 'id', array('first_name' => 'Louis',
+                                                 'last_name'  => 'Pasteur',
+                                                 'status'     => 1)
+                      );
+    $txn2 = new pressflow_transaction();
+    pressflow_transaction_update(self::$table, 'id', array('first_name' => 'Frank',
+                                                 'last_name'  => 'Miller',
+                                                 'status'     => 5)
+                      );
+    $txn2->rollback_if_false(FALSE);
+    unset($txn2);
+    unset($txn1);
+
+    // The __destruct method has now been called on each transaction object,
+    // and a roll back should have taken place.
+    $seq_test   = db_result(db_query("SELECT id FROM {sequences} WHERE name = '%s'", db_prefix_tables(self::$sequence1)));
+    $msg        = t('Verify sequence after roll back : %s');
+    $this->assertEqual($seq, $seq_test, $msg);
+    
+    $count_test = db_result(db_query('SELECT COUNT(*) FROM ' . self::$table));
+    $msg        = t('Verify table row count after roll back : %s');
+    $this->assertEqual($count, $count_test, $msg);
+  }
+
+
+  /**
+   * Verify that the commit behaves correctly.
+   */
+  public function testTransactionCommit() {
+    // Get the id from the sequence table before we start
+    $seq   = db_result(db_query("SELECT id FROM {sequences} WHERE name = '%s'", db_prefix_tables(self::$sequence1)));
+    $count = db_result(db_query('SELECT COUNT(*) FROM ' . self::$table));
+    
+    $txn1 = new pressflow_transaction();
+    pressflow_transaction_update(self::$table, 'id', array('first_name' => 'Louis',
+                                                 'last_name'  => 'Pasteur',
+                                                 'status'     => 1)
+                      );
+    $txn2 = new pressflow_transaction();
+    pressflow_transaction_update(self::$table, 'id', array('first_name' => 'Frank',
+                                                 'last_name'  => 'Miller',
+                                                 'status'     => 5)
+                      );
+    unset($txn2);
+    unset($txn1);
+
+    // The __destruct method has now been called on each transaction object,
+    // and a roll back should have taken place.
+    $seq_test   = db_result(db_query("SELECT id FROM {sequences} WHERE name = '%s'", db_prefix_tables(self::$sequence1)));
+    $msg        = t('Verify sequence after roll back : %s');
+    $this->assertEqual(($seq + 2), $seq_test, $msg);
+    
+    $count_test = db_result(db_query('SELECT COUNT(*) FROM ' . self::$table));
+    $msg        = t('Verify table row count after roll back : %s');
+    $this->assertEqual(($count + 2), $count_test, $msg);  
+  }
+}

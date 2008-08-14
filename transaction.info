@@ -1,0 +1,7 @@
+; $Id$
+
+name = Transaction
+description = Provides an API for nestable SQL transactions.
+package = Pressflow Core - required
+version = VERSION
+core = 5.x
