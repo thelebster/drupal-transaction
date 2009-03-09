@@ -1,6 +1,6 @@
 ; $Id$
 
 name = Transaction
-description = Provides an API for nestable SQL transactions.
-version = VERSION
-core = 5.x
+description = Provides an API for nested SQL transactions and related database operations.
+core = 6.x
+php = 5.2

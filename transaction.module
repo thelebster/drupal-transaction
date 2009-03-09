@@ -5,7 +5,6 @@
  * in MySQL.
  */
 
-
 /**
  * Provides a nestable transaction system for handling commits and rollbacks.
  *
@@ -18,8 +17,7 @@ class Transaction {
   
   /** Will the commit be allowed? */
   private static $AllowCommit = TRUE;
-  
-  
+
   /**
    * Create a new transaction.
    */
@@ -29,7 +27,6 @@ class Transaction {
       db_query('BEGIN');
     self::$Layers++;
   }
-
 
   /**
    * Complete the transaction by either performing a commit or a rollback
@@ -50,29 +47,26 @@ class Transaction {
     }
   }
   
-  
   /**
    * If the given value is FALSE (value AND type), roll back the current
    * transaction.
    *
    * @param boolean $var Roll back the current transaction iff TRUE.
    */
-  public function rollbackIfFalse($var)
+  public static function rollbackIfFalse($var)
   {
     if ($var === FALSE) {
-       $this->rollback();
+       self::rollback();
     }
   }
-  
   
   /**
    * Force this transaction to roll back when finished.
    */
-  public function rollback()
+  public static function rollback()
   {
     self::$AllowCommit = FALSE;
   }
-  
   
   /**
    * Will this transaction roll back instead of committing?
@@ -80,34 +74,11 @@ class Transaction {
    * @return boolean TRUE if the transaction will roll back, FALSE if it
    *         will commit.
    */
-  public function willRollback()
+  public static function willRollback()
   {
     return !self::$AllowCommit;
   }
 }
-
-
-/**
- * Transaction-friendly version of db_next_id(). The default Drupal
- * implementation performs a table lock which will terminate any open
- * transaction.
- *
- * @param string The un-prefixed table name to fetch and ID for.
- *
- * @return int The next ID in the sequence.
- */
-function transaction_db_next_id($name) {
-  $name = db_prefix_tables($name);
-  
-  // Reset LAST_INSERT_ID so it doesn't have a stale value if INSERT succeeds.
-  db_query('SELECT LAST_INSERT_ID(1)');
-  
-  db_query('INSERT INTO {sequences} VALUES ("%s", 1) ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id + 1)', $name);
-  $id = db_result(db_query('SELECT LAST_INSERT_ID()'));
-  
-  return $id;
-}
-
 
 /**
  * Utility function that abstracts transactionalized updates or inserts
@@ -130,7 +101,7 @@ function transaction_db_next_id($name) {
 function transaction_update($table, $key_field, $fields) {
   $txn = new Transaction();
 
-  // Accept a string if the kei field is one column
+  // Accept a string if the key field is one column
   $return_simple_key_field = FALSE;
   if (!is_array($key_field)) {
     $return_simple_key_field = TRUE;
@@ -140,7 +111,7 @@ function transaction_update($table, $key_field, $fields) {
   // Convert a passed object to an array
   $fields = (array) $fields;
   
-  // Check if primary key columns are specified
+  // Check if key columns are specified
   $key_field_set = TRUE;
   foreach ($key_field as $column) {
     if (!array_key_exists($column, $fields)) {
@@ -153,7 +124,6 @@ function transaction_update($table, $key_field, $fields) {
     $sql     = 'UPDATE {' . db_escape_table($table) . '} t SET ';
     $where   = '';
     $updates = array();
-
     foreach ($fields as $key => $value) {
       if (!in_array($key, $key_field)) {
         if ($value !== NULL) {
@@ -182,7 +152,7 @@ function transaction_update($table, $key_field, $fields) {
     
     // Return if we've actually updated something
     if (db_affected_rows()) {
-      // If we were passed a simple primary key, return the same
+      // If we were passed a simple key, return the same
       if ($return_simple_key_field) {
         return $fields[$key_field[0]];
       }
@@ -206,11 +176,10 @@ function transaction_update($table, $key_field, $fields) {
     }
   }
   else {
-    // We can't autogenerate if the primary key is more than one column
+    // We can't autogenerate if the key is more than one column
     if (count($key_field) > 1) {
       return FALSE;
     }
-    $fields[$key_field[0]] = transaction_db_next_id('{' . db_escape_table($table) . '}_' . $key_field[0]);
   }
   
   // Insert
@@ -229,7 +198,11 @@ function transaction_update($table, $key_field, $fields) {
   $sql .= 'VALUES (' . implode(',', $values) . ')';
   db_query($sql);
   
-  // If we were passed a scalar primary key, return the primary key of the new row as a scalar
+  if (!$key_field_set) {
+    $fields[$key_field[0]] = db_last_insert_id($table, $key_field[0]);
+  }
+
+  // If we were passed a scalar key, return the key of the new row as a scalar
   if ($return_simple_key_field) {
     return $fields[$key_field[0]];
   }
@@ -239,53 +212,4 @@ function transaction_update($table, $key_field, $fields) {
     $return_fields[$column] = $fields[$column];
   }
   return $return_fields;
-}
-
-
-/**
- * Legacy compatibility wrapper for transaction class.
- *
- * @see transaction
- * @deprecated 2008-08-12
- */
-class pressflow_transaction extends Transaction {
-
-  /**
-   * @see Transaction::rollbackIfFalse
-   */
-  public function rollback_if_false($var)
-  {
-    return parent::rollbackIfFalse($var);
-  }
-  
-  
-  /**
-   * @see Transaction::willRollback
-   */
-  public function will_rollback()
-  {
-    return parent::willRollback();
-  }
-}
-
-
-/**
- * Legacy compatibility wrapper for transaction_db_next_id().
- *
- * @see transaction_db_next_id
- * @deprecated 2008-08-12
- */
-function pressflow_transaction_db_next_id($name) {
-  return transaction_db_next_id($name);
-}
-
-
-/**
- * Legacy compatibility wrapper for transaction_update().
- *
- * @see transaction_update
- * @deprecated 2008-08-12
- */
-function pressflow_transaction_update($table, $key_field, $fields) {
-  return transaction_update($table, $key_field, $fields);
 }
