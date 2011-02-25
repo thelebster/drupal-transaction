@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file Provides a database transaction system for use with InnoDB tables
  * in MySQL.
