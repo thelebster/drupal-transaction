@@ -3,6 +3,7 @@
 namespace Drupal\transaction;
 
 use Drupal\Core\Entity\EntityHandlerInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Defines an interface for transactor handler.
@@ -28,7 +29,10 @@ interface TransactorHandlerInterface extends EntityHandlerInterface {
    * @param \Drupal\transaction\TransactionInterface $transaction
    *   The transaction to execute.
    * @param bool $save
-   *   Save the transaction after succeded execution.
+   *   Save the transaction after succeeded execution.
+   * @param \Drupal\User\UserInterface $executor
+   *   (optional) The user that executes the transaction. The current user by
+   *   default.
    *
    * @return bool
    *   TRUE if transaction was executed successful, FALSE otherwise.
@@ -36,7 +40,7 @@ interface TransactorHandlerInterface extends EntityHandlerInterface {
    * @throws \Drupal\transaction\InvalidTransactionStateException
    *   If the transaction is already executed.
    */
-  public function doExecute(TransactionInterface $transaction, $save = TRUE);
+  public function doExecute(TransactionInterface $transaction, $save = TRUE, UserInterface $executor = NULL);
 
   /**
    * Compose a human readable description for the given transaction.

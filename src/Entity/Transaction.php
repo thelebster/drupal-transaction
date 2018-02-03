@@ -142,6 +142,19 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
+    // The user that executes the transaction.
+    $fields['executor'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Executed by'))
+      ->setDescription(t('The user ID of the user that executed the transaction.'))
+      ->setRequired(FALSE)
+      ->setSetting('target_type', 'user')
+      ->setSetting('handler', 'default')
+      ->setDisplayOptions('view', [
+        'type' => 'entity_reference_label',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
     // Properties.
     $fields['properties'] = BaseFieldDefinition::create('map')
       ->setLabel(t('Properties'))
@@ -281,8 +294,30 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
   /**
    * {@inheritdoc}
    */
-  public function execute($save = TRUE) {
-    return $this->transactorHandler()->doExecute($this, $save);
+  public function execute($save = TRUE, UserInterface $user = NULL) {
+    return $this->transactorHandler()->doExecute($this, $save, $user);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getExecutorId() {
+    return $this->get('executor')->isEmpty() ? FALSE : $this->get('executor')->target_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getExecutor() {
+    return $this->get('executor')->isEmpty() ? NULL : $this->get('executor')->entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setExecutor(UserInterface $user) {
+    $this->get('executor')->setValue($user->id());
+    return $this;
   }
 
   /**

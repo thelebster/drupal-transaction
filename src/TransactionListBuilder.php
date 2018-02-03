@@ -147,9 +147,13 @@ class TransactionListBuilder extends EntityListBuilder {
         'data' => $this->t('Created'),
         'class' => [RESPONSIVE_PRIORITY_MEDIUM],
       ],
-      'execution_date' => $this->t('Executed'),
       'author' => [
         'data' => $this->t('Author'),
+        'class' => [RESPONSIVE_PRIORITY_LOW],
+      ],
+      'execution_date' => $this->t('Executed'),
+      'executor' => [
+        'data' => $this->t('Executor'),
         'class' => [RESPONSIVE_PRIORITY_LOW],
       ],
     ];
@@ -174,18 +178,26 @@ class TransactionListBuilder extends EntityListBuilder {
         '#type' => 'link',
         '#title' => $entity->label(),
         '#url' => $entity->toUrl(),
-      ]
+      ],
     ];
     $row['creation_date'] = $this->dateFormatter->format($entity->getCreatedTime(), 'short');
-    $row['execution_date'] = $entity->isPending()
-      ? []
-      : $this->dateFormatter->format($entity->getExecutionTime(), 'short');
     $row['author'] = [
       'data' => [
         '#theme' => 'username',
         '#account' => $entity->getOwner(),
-      ]
+      ],
     ];
+    $row['execution_date'] = $entity->isPending()
+      ? []
+      : $this->dateFormatter->format($entity->getExecutionTime(), 'short');
+    $row['executor'] = $entity->isPending()
+      ? []
+      : [
+          'data' => [
+          '#theme' => 'username',
+          '#account' => $entity->getExecutor(),
+        ],
+      ];
 
     // Extra field values.
     $plugin_settings = $this->transactionType->getPluginSettings();

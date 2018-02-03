@@ -4,6 +4,7 @@ namespace Drupal\transaction;
 
 use Drupal\user\EntityOwnerInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\user\UserInterface;
 
 /**
  * The interface for transaction entities.
@@ -186,7 +187,10 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    * @see \Drupal\transaction\TransactorPluginInterface::validateTransaction()
    *
    * @param bool $save
-   *   Save the transaction after succeded execution.
+   *   (optional) Save the transaction after succeeded execution.
+   * @param \Drupal\User\UserInterface $executor
+   *   (optional) The user that executes the transaction. The current user by
+   *   default.
    *
    * @return bool
    *   TRUE if the transaction execution was done, FALSE otherwise.
@@ -194,7 +198,7 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    * @throws \Drupal\transaction\InvalidTransactionStateException
    *   If the transaction is already executed.
    */
-  public function execute($save = TRUE);
+  public function execute($save = TRUE, UserInterface $executor = NULL);
 
   /**
    * Gets the transaction execution timestamp.
@@ -214,6 +218,33 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    *   The called transaction.
    */
   public function setExecutionTime($timestamp);
+
+  /**
+   * Gets the ID of the user that executed the transaction.
+   *
+   * @return int
+   *   The user ID of the executor. FALSE if transaction was no executed.
+   */
+  public function getExecutorId();
+
+  /**
+   * Gets the user that executed the transaction.
+   *
+   * @return \Drupal\User\UserInterface
+   *   The executor user. NULL if transaction was no executed.
+   */
+  public function getExecutor();
+
+  /**
+   * Sets the user that executed the transaction.
+   *
+   * @param \Drupal\User\UserInterface $user
+   *   The executor user.
+   *
+   * @return \Drupal\transaction\TransactionInterface
+   *   The called transaction.
+   */
+  public function setExecutor(UserInterface $user);
 
   /**
    * Indicates if the transaction is pending execution.
