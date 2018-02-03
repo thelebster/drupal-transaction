@@ -40,7 +40,6 @@ use Drupal\Core\Field\Entity\BaseFieldOverride;
  *   },
  *   config_export = {
  *     "id",
- *     "uuid",
  *     "label",
  *     "target_entity_type",
  *     "transactor",
