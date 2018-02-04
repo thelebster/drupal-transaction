@@ -65,7 +65,8 @@ class RouteSubscriber extends RouteSubscriberBase {
         // parameter must match the target entity id.
         $route = clone $collection->get('entity.transaction.add_form');
         $route
-          ->setPath("/transaction/add/{transaction_type}/{target_entity_type}/{{$target_entity_type_id}}");
+          ->setPath("/transaction/add/{transaction_type}/{target_entity_type}/{{$target_entity_type_id}}")
+          ->setOption('_transaction_target_entity_type_id', $target_entity_type_id);
         $route_options = $route->getOptions();
         unset($route_options['parameters']['target_entity']);
         $route_options['parameters'][$target_entity_type_id]['type'] = 'entity:' . $target_entity_type_id;

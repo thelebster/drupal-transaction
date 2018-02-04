@@ -77,10 +77,10 @@ entity.transaction.add_form:
   options:
     _admin_route: TRUE
     parameters:
-      target_entity:
-        type: entity:{target_entity_type}
       transaction_type:
         type: entity:transaction_type
+      target_entity:
+        type: entity:{target_entity_type}
 
 entity.transaction.canonical:
   path: '/transaction/{transaction}'
