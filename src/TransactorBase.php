@@ -437,92 +437,110 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
       return;
     }
 
-    // Create new fields.
+    // Process transactor fields.
     $values = $form_state->getValues();
     foreach ($values as $key => $value) {
+      if (empty($value) || !$field_info = $form_state->getTemporaryValue('field_info_' . $key)) {
+        // No value or not a field.
+        continue;
+      }
+
+      $field_name = $value;
+
+      // Create new fields.
       if ($value === '_create') {
-        $field_info = $form_state->getTemporaryValue('field_info_' . $key);
+        // New field, get the name from the given machine name in form.
+        // Add prefix to the given field name.
+        $field_name = $this->fieldPrefix . $values[$key . '_field_name'];
 
         // Field storage.
         $new_field = FieldStorageConfig::create([
-          'field_name' => $this->fieldPrefix . $values[$key . '_field_name'],
+          'field_name' => $field_name,
           'entity_type' => $field_info['entity_type'],
           'type' => $field_info['type'],
           'settings' => $field_info['settings'],
         ]);
         $new_field->save();
         $form_state->setValue($key, $new_field->getName());
+      }
 
-        // Add to applicable bundles.
-        $bundles = [];
+      // Add field to applicable bundles.
+      $bundles = [];
+      if ($field_info['entity_type'] == 'transaction') {
+        // Transaction field.
+        $bundles[] = $transaction_type->id();
+      }
+      elseif ($field_info['entity_type'] == $transaction_type->getTargetEntityTypeId()) {
+        // Target entity field.
+        $bundles = $transaction_type->getBundles(TRUE);
+      }
+      foreach ($bundles as $bundle) {
+        if (FieldConfig::loadByName($field_info['entity_type'], $bundle, $field_name)) {
+          // Field already exists in bundle.
+          continue;
+        }
+
+        // Set the new transaction type id in reference fields to this
+        // transaction type.
+        $handler_settings = [];
+        if (isset($field_info['handler_settings']) && isset($field_info['handler_settings']['target_bundles'])) {
+          $handler_settings = $field_info['handler_settings'];
+          foreach ($field_info['handler_settings']['target_bundles'] as $target_bundle_key => $target_bundle) {
+            if ($target_bundle === NULL) {
+              $handler_settings['target_bundles'][$target_bundle_key] = $values['id'];
+            }
+          }
+        }
+
+        // Attach to bundle.
+        FieldConfig::create([
+          'field_name' => $field_name,
+          'entity_type' => $field_info['entity_type'],
+          'bundle' => $bundle,
+          'label' => $values[$key . '_label'],
+          'settings' => [
+            'handler' => 'default',
+            'handler_settings' => $handler_settings,
+          ],
+          'required' => $field_info['required'],
+        ])->save();
+
+        // Field form display.
+        $display_id = $field_info['entity_type'] . '.' . $bundle . '.' . 'default';
+        $display_values = [
+          'targetEntityType' => $field_info['entity_type'],
+          'bundle' => $bundle,
+          'mode' => 'default',
+          'status' => TRUE,
+        ];
+
+        // Enable new field in transaction form.
         if ($field_info['entity_type'] == 'transaction') {
-          // Transaction field.
-          $bundles[] = $transaction_type->id();
-        }
-        elseif ($field_info['entity_type'] == $transaction_type->getTargetEntityTypeId()) {
-          // Target entity field.
-          $bundles = $transaction_type->getBundles(TRUE);
-        }
-        foreach ($bundles as $bundle) {
-          // Set the new transaction type id in reference fields to this
-          // transaction type.
-          $handler_settings = [];
-          if (isset($field_info['handler_settings']) && isset($field_info['handler_settings']['target_bundles'])) {
-            $handler_settings = $field_info['handler_settings'];
-            foreach ($field_info['handler_settings']['target_bundles'] as $target_bundle_key => $target_bundle) {
-              if ($target_bundle === NULL) {
-                $handler_settings['target_bundles'][$target_bundle_key] = $values['id'];
-              }
-            }
+          if (!$form_display = EntityFormDisplay::load($display_id)) {
+            $form_display = EntityFormDisplay::create($display_values);
           }
 
-          // Attach to bundle.
-          FieldConfig::create([
-            'field_storage' => $new_field,
-            'bundle' => $bundle,
-            'label' => $values[$key . '_label'],
-            'settings' => [
-              'handler' => 'default',
-              'handler_settings' => $handler_settings,
-            ],
-            'required' => $field_info['required'],
-          ])->save();
-
-          // Enable new field in transaction form.
-          $display_id = $field_info['entity_type'] . '.' . $bundle . '.' . 'default';
-          $display_values = [
-            'targetEntityType' => $field_info['entity_type'],
-            'bundle' => $bundle,
-            'mode' => 'default',
-            'status' => TRUE,
-          ];
-          if ($field_info['entity_type'] == 'transaction') {
-            if (!$form_display = EntityFormDisplay::load($display_id)) {
-              $form_display = EntityFormDisplay::create($display_values);
-            }
-
-            $form_display->setComponent(
-              $new_field->getName(),
-              [
-                'weight' => 0,
-              ]
-            );
-            $form_display->save();
-          }
-
-          // Enable the display of the new field.
-          if (!$view_display = EntityViewDisplay::load($display_id)) {
-            $view_display = EntityViewDisplay::create($display_values);
-          }
-
-          $view_display->setComponent(
-            $new_field->getName(),
+          $form_display->setComponent(
+            $field_name,
             [
               'weight' => 0,
             ]
           );
-          $view_display->save();
+          $form_display->save();
         }
+
+        // Enable the display of the new field.
+        if (!$view_display = EntityViewDisplay::load($display_id)) {
+          $view_display = EntityViewDisplay::create($display_values);
+        }
+
+        $view_display->setComponent(
+          $field_name,
+          [
+            'weight' => 0,
+          ]
+        );
+        $view_display->save();
       }
     }
 
