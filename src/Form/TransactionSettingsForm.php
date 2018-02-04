@@ -2,6 +2,7 @@
 
 namespace Drupal\transaction\Form;
 
+use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -30,6 +31,13 @@ class TransactionSettingsForm extends ConfigFormBase {
   protected $routeBuilder;
 
   /**
+   * The cache tags invalidator.
+   *
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
+   */
+  protected $cacheTagsInvalidator;
+
+  /**
    * Class constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -38,11 +46,14 @@ class TransactionSettingsForm extends ConfigFormBase {
    *   The route builder.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The translation manager.
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
+   *   The cache tags invalidator.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, TranslationInterface $string_translation) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, TranslationInterface $string_translation, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
     $this->entityTypeManager = $entity_type_manager;
     $this->routeBuilder = $route_builder;
     $this->stringTranslation = $string_translation;
+    $this->cacheTagsInvalidator = $cache_tags_invalidator;
   }
 
   /**
@@ -52,7 +63,8 @@ class TransactionSettingsForm extends ConfigFormBase {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('router.builder'),
-      $container->get('string_translation')
+      $container->get('string_translation'),
+      $container->get('cache_tags.invalidator')
     );
   }
 
@@ -135,19 +147,34 @@ class TransactionSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $config = $this->config('transaction.settings');
-    $tabs = [];
-    foreach ($form_state->getValue('tabs') as $tab) {
-      if (!empty($tab) && is_string($tab)) {
-        $tabs[] = $tab;
+    $tabs = $config->get('tabs');
+    foreach ($form_state->getValue('tabs') as $tab => $state) {
+      $current_key = array_search($tab, $tabs);
+      // Act only on changes.
+      if ($diff = strcmp(empty($state), $current_key === FALSE)) {
+        if ($diff > 0) {
+          unset($tabs[$current_key]);
+        }
+        else {
+          $tabs[] = $tab;
+        }
+
+        // Invalidates target entity type cache.
+        $target_entity_type = explode('-', $tab)[1];
       }
     }
 
-    $config->set('tabs', $tabs)->save();
+    // Save only if something changed.
+    if (isset($target_entity_type)) {
+      $config->set('tabs', $tabs)->save();
 
-    // A link template will be added to the target entity type definitions.
-    $this->entityTypeManager->clearCachedDefinitions();
-    // A route per transaction type and target entity will be added.
-    $this->routeBuilder->rebuild();
+      // Invalidate block view to rebuild menu and local task blocks.
+      $this->cacheTagsInvalidator->invalidateTags(['block_view']);
+      // A link template will be added to the target entity type definitions.
+      $this->entityTypeManager->clearCachedDefinitions();
+      // A route per transaction type and target entity will be added.
+      $this->routeBuilder->rebuild();
+    }
 
     parent::submitForm($form, $form_state);
   }
