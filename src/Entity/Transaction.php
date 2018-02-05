@@ -97,7 +97,6 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ->setSetting('handler', 'default')
       ->setDefaultValueCallback('Drupal\transaction\Entity\Transaction::getCurrentUserId')
       ->setDisplayOptions('view', [
-        'label' => 'hidden',
         'type' => 'author',
         'weight' => 0,
       ])
@@ -124,12 +123,26 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
-    // Operation code field.
-    $fields['operation'] = BaseFieldDefinition::create('string')
+    // Operation.
+    $fields['operation'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Operation'))
-      ->setDescription(t('An internal operation code defined by the transactor plugin that identifies the particular kind of transaction.'))
-      ->setRequired(TRUE)
-      ->setSetting('max_length', EntityTypeInterface::ID_MAX_LENGTH);
+      ->setDescription(t('Reference to a transaction operation that describes the transaction.'))
+      ->setRequired(FALSE)
+      ->setSetting('target_type', 'transaction_operation')
+      ->setSetting('handler', 'default')
+      ->setDisplayOptions('view', [
+        'type' => 'entity_reference_label',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('view', TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'options_select',
+        'weight' => 0,
+        'settings' => [
+          'size' => '60',
+        ],
+      ])
+      ->setDisplayConfigurable('form', TRUE);
 
     // Execution timestamp.
     $fields['executed'] = BaseFieldDefinition::create('timestamp')
@@ -172,7 +185,12 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ->setLabel(t('Details'))
       ->setDescription(t('A list of details of the transaction.'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\transaction\TransactionDetailsItemList');
+      ->setClass('\Drupal\transaction\TransactionDetailsItemList')
+      ->setDisplayOptions('view', [
+        'type' => 'list_default',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     return $fields;
   }
@@ -331,14 +349,21 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    * {@inheritdoc}
    */
   public function getOperation() {
-    return $this->get('operation')->value;
+    return $this->get('operation')->entity;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setOperation($operation) {
-    $this->set('operation', $operation);
+  public function getOperationId() {
+    return $this->get('operation')->target_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setOperation($operation = NULL) {
+    $this->set('operation', is_string($operation) ? $operation : $operation->id());
     return $this;
   }
 

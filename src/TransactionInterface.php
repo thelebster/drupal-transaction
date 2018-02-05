@@ -101,26 +101,32 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   public function setTargetEntity(ContentEntityInterface $entity);
 
   /**
-   * Gets the operation code.
+   * Gets the transaction operation.
    *
-   * @return string
-   *   The operation code for this transaction.
+   * @return \Drupal\transaction\TransactionOperationInterface
+   *   The transaction operation for this transaction. NULL if not set.
    */
   public function getOperation();
 
   /**
-   * Sets the operation code.
+   * Gets the transaction operation ID.
    *
-   * @param string $operation
-   *   The operation code to set.
+   * @return string
+   *   The transaction operation for this transaction. NULL if not set.
+   */
+  public function getOperationId();
+
+  /**
+   * Sets the transaction operation.
+   *
+   * @param string|\Drupal\transaction\TransactionOperationInterface $operation
+   *   (optional) The transaction operation config entity or its ID. Defaults
+   *     to NULL that clears the current value.
    *
    * @return \Drupal\transaction\TransactionInterface
    *   The called transaction.
-   *
-   * @throws \InvalidArgumentException
-   *   If the operation code has an invalid format.
    */
-  public function setOperation($operation);
+  public function setOperation($operation = NULL);
 
   /**
    * Returns the transaction description.

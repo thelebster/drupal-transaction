@@ -11,7 +11,7 @@ transaction.settings:
         type: string
         label: 'Transaction tab'
 
-transaction.transaction_type.*:
+transaction.type.*:
   type: config_entity
   label: 'Transaction type'
   mapping:
@@ -49,3 +49,23 @@ transaction.transaction_type.*:
       sequence:
         type: string
         label: 'Option value'
+
+transaction.operation.*:
+  type: config_entity
+  label: 'Transaction operation'
+  mapping:
+    id:
+      type: string
+      label: 'Machine-readable name'
+    label:
+      type: label
+      label: 'Name'
+    description:
+      type: text
+      label: 'Operation description template'
+    details:
+      type: sequence
+      label: 'Operation detail templates'
+      sequence:
+        type: text
+        label: 'Detail'

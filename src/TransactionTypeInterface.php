@@ -30,7 +30,7 @@ interface TransactionTypeInterface extends ConfigEntityInterface {
   const EXECUTION_ASK = 3;
 
   /**
-   * Returns the target entity type ID of this transacion.
+   * Returns the target entity type ID of this transaction.
    *
    * @return string
    *   The target entity type ID.
@@ -38,13 +38,15 @@ interface TransactionTypeInterface extends ConfigEntityInterface {
   public function getTargetEntityTypeId();
 
   /**
-   * Sets the target entity type ID of this transacion.
+   * Sets the target entity type ID of this transaction.
    *
    * @param string $entity_type_id
    *   The target entity type ID.
    *
    * @return \Drupal\transaction\TransactionTypeInterface
    *   The called transaction type.
+   *
+   * @deprecated Target entity type should be set only in constructor.
    */
   public function setTargetEntityTypeId($entity_type_id);
 

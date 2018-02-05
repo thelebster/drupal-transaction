@@ -4,6 +4,12 @@ transaction.add_transaction_type_action:
   appears_on:
     - entity.transaction_type.collection
 
+transaction.add_transaction_operation_action:
+  route_name: entity.transaction_operation.add_form
+  title: 'Add transaction operation'
+  appears_on:
+    - entity.transaction_operation.collection
+
 transaction.add_transaction_action:
   route_name: entity.transaction.add_form
   title: 'Add transaction'

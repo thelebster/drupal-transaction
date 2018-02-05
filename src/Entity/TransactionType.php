@@ -16,6 +16,10 @@ use Drupal\Core\Field\Entity\BaseFieldOverride;
  *   label = @Translation("Transaction type"),
  *   label_singular = @Translation("Transaction type"),
  *   label_plural = @Translation("Transaction types"),
+ *   label_count = @PluralTranslation(
+ *     singular = "@count transaction type",
+ *     plural = "@count transaction types",
+ *   ),
  *   admin_permission = "administer transaction types",
  *   handlers = {
  *     "list_builder" = "Drupal\transaction\TransactionTypeListBuilder",
@@ -26,17 +30,17 @@ use Drupal\Core\Field\Entity\BaseFieldOverride;
  *     },
  *   },
  *   admin_permission = "administer transactions",
- *   config_prefix = "transaction_type",
+ *   config_prefix = "type",
  *   bundle_of = "transaction",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
  *   },
  *   links = {
- *     "add-form" = "/admin/structure/transaction/add/{target_entity_type}/{transactor}",
- *     "edit-form" = "/admin/structure/transaction/edit/{transaction_type}",
- *     "delete-form" = "/admin/structure/transaction/delete/{transaction_type}",
- *     "collection" = "/admin/structure/transaction",
+ *     "add-form" = "/admin/config/workflow/transaction/add/{target_entity_type}/{transactor}",
+ *     "edit-form" = "/admin/config/workflow/transaction/edit/{transaction_type}",
+ *     "delete-form" = "/admin/config/workflow/transaction/delete/{transaction_type}",
+ *     "collection" = "/admin/config/workflow/transaction",
  *   },
  *   config_export = {
  *     "id",
@@ -56,6 +60,13 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
    * @var string
    */
   protected $id;
+
+  /**
+   * The transaction type label.
+   *
+   * @var string
+   */
+  protected $label;
 
   /**
    * The target entity type ID.
@@ -245,11 +256,13 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
         ->setLabel($this->entityTypeManager()->getDefinition($this->target_entity_type)->getLabel())
         ->setDescription(t('The entity to which this transaction applies.'))
         ->setRequired(TRUE)
-        ->setSetting('target_type', $this->target_entity_type);
+        ->setSetting('target_type', $this->getTargetEntityTypeId());
     }
 
     // Update bundles.
-    $override->setSetting('handler_settings', ['target_bundles' => $this->getBundles(TRUE)]);
+    $override->setSetting('target_type', $this->getTargetEntityTypeId());
+    $override->setSetting('handler_settings', ['target_bundles' => $this->getBundles(TRUE)
+    , 'target_type' => $this->getTargetEntityTypeId()]);
 
     $override->save();
   }

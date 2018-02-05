@@ -38,6 +38,56 @@ entity.transaction_type.delete_form:
   requirements:
     _entity_access: 'transaction_type.delete'
 
+entity.transaction_operation.collection:
+  path: '/admin/config/workflow/transaction/edit/{transaction_type}/operation'
+  defaults:
+    _entity_list: 'transaction_operation'
+    _title: 'Transaction operations'
+  requirements:
+    _entity_access: 'transaction_type.edit'
+  options:
+    parameters:
+      transaction_type:
+        type: entity:transaction_type
+
+entity.transaction_operation.add_form:
+  path: '/admin/config/workflow/transaction/edit/{transaction_type}/operation/add'
+  defaults:
+    _entity_form: 'transaction_operation.add'
+    _title: 'Add transaction operation'
+  requirements:
+    _entity_access: 'transaction_type.edit'
+  options:
+    parameters:
+      transaction_type:
+        type: entity:transaction_type
+
+entity.transaction_operation.edit_form:
+  path: '/admin/config/workflow/transaction/edit/{transaction_type}/operation/edit/{transaction_operation}'
+  defaults:
+    _entity_form: 'transaction_operation.edit'
+    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
+  requirements:
+    _entity_access: 'transaction_type.edit'
+    _entity_access: 'transaction_operation.edit'
+  options:
+    parameters:
+      transaction_type:
+        type: entity:transaction_type
+
+entity.transaction_operation.delete_form:
+  path: '/admin/config/workflow/transaction/edit/{transaction_type}/operation/delete/{transaction_operation}'
+  defaults:
+    _entity_form: 'transaction_operation.delete'
+    _title: 'Delete transaction operation'
+  requirements:
+    _entity_access: 'transaction_type.edit'
+    _entity_access: 'transaction_operation.delete'
+  options:
+    parameters:
+      transaction_type:
+        type: entity:transaction_type
+
 transaction.settings_form:
   path: '/admin/config/workflow/transaction/settings'
   defaults:

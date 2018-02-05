@@ -159,7 +159,6 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = t('Save transaction type');
-    $actions['delete']['#value'] = t('Delete transaction type');
     return $actions;
   }
 
@@ -197,14 +196,20 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
     // Update the transaction type.
     $transaction_type->save();
 
-    $t_args = ['%name' => $transaction_type->label()];
+    // Messages.
+    $t_args = [
+      '%label' => $transaction_type->label(),
+      '@transactor' => $transaction_type->getPluginId(),
+      '@target' => $transaction_type->getTargetEntityTypeId(),
+    ];
+    $logger_args = $t_args + ['link' => $transaction_type->toLink($this->t('Edit'), 'edit-form')->toString()];
     if ($status == SAVED_UPDATED) {
-      drupal_set_message($this->t('The transaction type %name has been updated.', $t_args));
+      drupal_set_message($this->t('Transaction type %label has been updated.', $t_args));
+      $this->logger('transaction')->notice('Transaction type %label has been updated.', $logger_args);
     }
-    elseif ($status == SAVED_NEW) {
-      drupal_set_message($this->t('The transaction type %name has been added.', $t_args));
-      $context = array_merge($t_args, ['link' => $transaction_type->toLink($this->t('View'), 'collection')->toString()]);
-      $this->logger('transaction')->notice('Added transaction type %name.', $context);
+    else {
+      drupal_set_message($this->t('Transaction type %label has been added.', $t_args));
+      $this->logger('transaction')->notice('New transaction type %label with transactor @transactor and target entity type @target has been added.', $logger_args);
     }
 
     $this->entityManager->clearCachedDefinitions();

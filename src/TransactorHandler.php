@@ -3,6 +3,7 @@
 namespace Drupal\transaction;
 
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Utility\Token;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -37,6 +38,13 @@ class TransactorHandler implements TransactorHandlerInterface {
   protected $currentUser;
 
   /**
+   * The token service.
+   *
+   * @var \Drupal\Core\Utility\Token
+   */
+  protected $token;
+
+  /**
    * Creates a new TransactorHandler object.
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $transaction_storage
@@ -45,11 +53,14 @@ class TransactorHandler implements TransactorHandlerInterface {
    *   The time service.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current user.
+   * @param \Drupal\Core\Utility\Token $token
+   *   The token service.
    */
-  public function __construct(EntityStorageInterface $transaction_storage, Time $time_service, AccountInterface $current_user) {
+  public function __construct(EntityStorageInterface $transaction_storage, Time $time_service, AccountInterface $current_user, Token $token) {
     $this->transactionStorage = $transaction_storage;
     $this->timeService = $time_service;
     $this->currentUser = $current_user;
+    $this->token = $token;
   }
 
   /**
@@ -59,7 +70,8 @@ class TransactorHandler implements TransactorHandlerInterface {
     return new static(
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
       $container->get('datetime.time'),
-      $container->get('current_user')
+      $container->get('current_user'),
+      $container->get('token')
     );
   }
 
@@ -118,14 +130,56 @@ class TransactorHandler implements TransactorHandlerInterface {
    * {@inheritdoc}
    */
   public function composeDescription(TransactionInterface $transaction, $langcode = NULL) {
-    return $this->transactorPlugin($transaction)->getTransactionDescription($transaction, $langcode);
+    if ($operation = $transaction->getOperation()) {
+      $token_options = ['clear' => TRUE];
+      if ($langcode) {
+        $token_options['langcode'] = $langcode;
+      }
+
+      $target_entity = $transaction->getTargetEntity();
+      $target_entity_type_id = $target_entity->getEntityTypeId();
+      $token_data = [
+        'transaction' => $transaction,
+        TransactorHandler::getTokenContextFromEntityTypeId($target_entity_type_id) => $target_entity,
+      ];
+
+      $description = $this->token->replace($operation->getDescription(), $token_data, $token_options);
+    }
+    else {
+      $description = $this->transactorPlugin($transaction)->getTransactionDescription($transaction, $langcode);
+    }
+
+    return $description;
   }
 
   /**
    * {@inheritdoc}
    */
   public function composeDetails(TransactionInterface $transaction, $langcode = NULL) {
-    return $this->transactorPlugin($transaction)->getTransactionDetails($transaction, $langcode);
+    if ($operation = $transaction->getOperation()) {
+      $details = [];
+
+      $token_options = ['clear' => TRUE];
+      if ($langcode) {
+        $token_options['langcode'] = $langcode;
+      }
+
+      $target_entity = $transaction->getTargetEntity();
+      $target_entity_type_id = $target_entity->getEntityTypeId();
+      $token_data = [
+        'transaction' => $transaction,
+        TransactorHandler::getTokenContextFromEntityTypeId($target_entity_type_id) => $target_entity,
+      ];
+
+      foreach ($operation->getDetails() as $detail) {
+        $details[] = $this->token->replace($detail, $token_data, $token_options);
+      }
+    }
+    else {
+      $details = $this->transactorPlugin($transaction)->getTransactionDetails($transaction, $langcode);
+    }
+
+    return $details;
   }
 
   /**
@@ -183,6 +237,37 @@ class TransactorHandler implements TransactorHandlerInterface {
    */
   protected function transactorPlugin(TransactionInterface $transaction) {
     return $transaction->get('type')->entity->getPlugin();
+  }
+
+  /**
+   * Guess the token context for a entity type.
+   *
+   * @param string $entity_type_id
+   *   The entity type ID.
+   *
+   * @return string
+   *   The token context for the given entity type ID.
+   */
+  public static function getTokenContextFromEntityTypeId($entity_type_id) {
+    switch ($entity_type_id) {
+      case 'taxonomy_term':
+        // Taxonomy term token type doesn't match the entity type's machine
+        // name.
+        $context = 'term';
+        break;
+
+      case 'taxonomy_vocabulary' :
+        // Taxonomy vocabulary token type doesn't match the entity type's
+        // machine name.
+        $context = 'vocabulary';
+        break;
+
+      default :
+        $context = $entity_type_id;
+        break;
+    }
+
+    return $context;
   }
 
 }

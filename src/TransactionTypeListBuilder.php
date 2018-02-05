@@ -176,4 +176,13 @@ class TransactionTypeListBuilder extends ConfigEntityListBuilder {
     return $build;
   }
 
+  public function getDefaultOperations(EntityInterface $entity) {
+    return [
+      'operations' => [
+        'title' => $this->t('Transaction operations'),
+        'weight' => 50,
+        'url' => Url::fromRoute('entity.transaction_operation.collection', ['transaction_type' => $entity->id()]),
+      ]] + parent::getDefaultOperations($entity);
+  }
+
 }
