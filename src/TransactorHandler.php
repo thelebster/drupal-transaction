@@ -97,8 +97,9 @@ class TransactorHandler implements TransactorHandlerInterface {
     // Search the last executed transaction of the same type and with the same
     // target.
     $result = $this->transactionStorage->getQuery()
-      ->condition('type', $transaction->getType())
-      ->condition('target_entity', $transaction->getTargetEntityId())
+      ->condition('type', $transaction->getTypeId())
+      ->condition('target_entity.target_id', $transaction->getTargetEntityId())
+      ->condition('target_entity.target_type', $transaction->getType()->getTargetEntityTypeId())
       ->exists('executed')
       ->range(0, 1)
       ->sort('executed', 'DESC')
@@ -157,8 +158,6 @@ class TransactorHandler implements TransactorHandlerInterface {
    */
   public function composeDetails(TransactionInterface $transaction, $langcode = NULL) {
     if ($operation = $transaction->getOperation()) {
-      $details = [];
-
       $token_options = ['clear' => TRUE];
       if ($langcode) {
         $token_options['langcode'] = $langcode;
@@ -171,6 +170,7 @@ class TransactorHandler implements TransactorHandlerInterface {
         TransactorHandler::getTokenContextFromEntityTypeId($target_entity_type_id) => $target_entity,
       ];
 
+      $details = [];
       foreach ($operation->getDetails() as $detail) {
         $details[] = $this->token->replace($detail, $token_data, $token_options);
       }
@@ -191,8 +191,9 @@ class TransactorHandler implements TransactorHandlerInterface {
     }
 
     $result = $this->transactionStorage->getQuery()
-      ->condition('type', $transaction->getType())
-      ->condition('target_entity', $transaction->getTargetEntityId())
+      ->condition('type', $transaction->getTypeId())
+      ->condition('target_entity.target_id', $transaction->getTargetEntityId())
+      ->condition('target_entity.target_type', $transaction->getType()->getTargetEntityTypeId())
       ->exists('executed')
       ->condition('executed', $transaction->getExecutionTime(), '<')
       ->range(0, 1)
@@ -213,8 +214,9 @@ class TransactorHandler implements TransactorHandlerInterface {
     }
 
     $result = $this->transactionStorage->getQuery()
-      ->condition('type', $transaction->getType())
-      ->condition('target_entity', $transaction->getTargetEntityId())
+      ->condition('type', $transaction->getTypeId())
+      ->condition('target_entity.target_id', $transaction->getTargetEntityId())
+      ->condition('target_entity.target_type', $transaction->getType()->getTargetEntityTypeId())
       ->exists('executed')
       ->condition('executed', $transaction->getExecutionTime(), '>')
       ->range(0, 1)

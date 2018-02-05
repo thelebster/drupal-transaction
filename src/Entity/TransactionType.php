@@ -6,7 +6,6 @@ use Drupal\transaction\TransactionTypeInterface;
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\Core\Plugin\DefaultSingleLazyPluginCollection;
 use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Field\Entity\BaseFieldOverride;
 
 /**
  * Provides a type of transaction.
@@ -236,35 +235,6 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
     sort($bundles);
 
     $this->set('bundles', $bundles);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
-    // Reference field to the target entity in the transaction must be override
-    // to set the target entity type.
-    if ($update) {
-      $override = BaseFieldOverride::loadByName('transaction', $this->id(), 'target_entity');
-    }
-    else {
-      $override = BaseFieldOverride::create([
-        'field_name' => 'target_entity',
-        'entity_type' => 'transaction',
-        'bundle' => $this->id(),
-      ])
-        ->setLabel($this->entityTypeManager()->getDefinition($this->target_entity_type)->getLabel())
-        ->setDescription(t('The entity to which this transaction applies.'))
-        ->setRequired(TRUE)
-        ->setSetting('target_type', $this->getTargetEntityTypeId());
-    }
-
-    // Update bundles.
-    $override->setSetting('target_type', $this->getTargetEntityTypeId());
-    $override->setSetting('handler_settings', ['target_bundles' => $this->getBundles(TRUE)
-    , 'target_type' => $this->getTargetEntityTypeId()]);
-
-    $override->save();
   }
 
   /**

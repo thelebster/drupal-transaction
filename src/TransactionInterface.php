@@ -22,9 +22,17 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   const PENDING = 0;
 
   /**
-   * Returns the transaction type.
+   * Returns the transaction type ID.
    *
    * @return string
+   *   The transaction type.
+   */
+  public function getTypeId();
+
+  /**
+   * Returns the transaction type.
+   *
+   * @return \Drupal\transaction\TransactionTypeInterface
    *   The transaction type.
    */
   public function getType();

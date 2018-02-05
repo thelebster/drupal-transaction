@@ -113,12 +113,13 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ])
       ->setDisplayConfigurable('form', TRUE);
 
-    // The target_entity. Override by the transaction type entity to adjust
-    // the target entity type.
-    // @see \Drupal\transaction\Entity\TransactionType::postSave()
-    $fields['target_entity'] = BaseFieldDefinition::create('entity_reference')
+    // Target entity.
+    $fields['target_entity'] = BaseFieldDefinition::create('dynamic_entity_reference')
+      ->setLabel(t('Target entity'))
+      ->setDescription(t('The target entity of the transaction.'))
+      ->setRequired(TRUE)
       ->setDisplayOptions('view', [
-        'type' => 'entity_reference_label',
+        'type' => 'author',
         'weight' => 0,
       ])
       ->setDisplayConfigurable('view', TRUE);
@@ -342,7 +343,14 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    * {@inheritdoc}
    */
   public function getType() {
-    return $this->bundle();
+    return $this->get('type')->entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTypeId() {
+    return $this->get('type')->getString();
   }
 
   /**
@@ -407,7 +415,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    * {@inheritdoc}
    */
   public function setTargetEntity(ContentEntityInterface $entity) {
-    $this->set('target_entity', $entity->id());
+    $this->get('target_entity')->setValue($entity);
     return $this;
   }
 
@@ -456,8 +464,8 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
   protected function urlRouteParameters($rel) {
     $uri_route_parameters = parent::urlRouteParameters($rel);
     if ($rel === 'collection' || $rel == 'add-form') {
-      $uri_route_parameters['transaction_type'] = $this->getType();
-      $uri_route_parameters['target_entity_type'] = $this->get('type')->entity->getTargetEntityTypeId();
+      $uri_route_parameters['transaction_type'] = $this->getTypeId();
+      $uri_route_parameters['target_entity_type'] = $this->getType()->getTargetEntityTypeId();
       // Transactions with empty target entity field is inconsistent. Returning
       // 0 to avoid exceptions. URL will end in a page not found.
       $uri_route_parameters['target_entity'] = $this->getTargetEntityId() ?: 0;

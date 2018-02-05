@@ -54,7 +54,7 @@ class TransactionAccessControlHandler extends EntityAccessControlHandler {
       }
 
       // Finally rely on transaction type permissions.
-      $type = $entity->getType();
+      $type = $entity->getTypeId();
       $result = AccessResult::allowedIfHasPermission($account, "$operation any $type transaction");
       if ($result->isNeutral() && $entity->getOwnerId() == $account->id()) {
         $result = AccessResult::allowedIfHasPermission($account, "$operation own $type transaction");

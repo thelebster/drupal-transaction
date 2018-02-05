@@ -4,3 +4,5 @@ description: 'Transactional operations over entities.'
 package: Other
 configure: entity.transaction_type.collection
 core: 8.x
+dependencies:
+ - dynamic_entity_reference:dynamic_entity_reference (=8.x-1.x)

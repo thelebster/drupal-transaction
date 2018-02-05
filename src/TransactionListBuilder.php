@@ -126,7 +126,8 @@ class TransactionListBuilder extends EntityListBuilder {
     }
 
     if ($this->targetEntity) {
-      $query->condition('target_entity', $this->targetEntity->id());
+      $query->condition('target_entity.target_id', $this->targetEntity->id())
+        ->condition('target_entity.target_type', $this->transactionType->getTargetEntityTypeId());
     }
 
     // Only add the pager if a limit is specified.
