@@ -35,13 +35,6 @@ use Drupal\transaction\TransactionInterface;
  *       "description" = @Translation("A text field to store a description for the transaction."),
  *       "required" = FALSE,
  *     },
- *     {
- *       "name" = "details",
- *       "type" = "string",
- *       "title" = @Translation("Details"),
- *       "description" = @Translation("A text field with additional details about the transaction."),
- *       "required" = FALSE,
- *     },
  *   },
  *   target_entity_fields = {
  *     {
@@ -79,9 +72,7 @@ class BalanceTransactor extends GenericTransactor {
       return FALSE;
     }
 
-    /** @var \Drupal\transaction\TransactionTypeInterface $transaction_type */
-    $transaction_type = $transaction->get('type')->entity;
-    $settings = $transaction_type->getPluginSettings();
+    $settings = $transaction->getType()->getPluginSettings();
 
     // Current balance from the last executed transaction. The current transaction
     // balance will take as the initial balance.
@@ -106,25 +97,52 @@ class BalanceTransactor extends GenericTransactor {
    * {@inheritdoc}
    */
   public function getTransactionDescription(TransactionInterface $transaction, $langcode = NULL) {
-    // @todo if transaction description field defined and no empty value on field, return that, else, the default
-    return parent::getTransactionDescription($transaction, $langcode);
-  }
+    if ($transaction->isNew()) {
+      return parent::getTransactionDescription($transaction, $langcode);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getTransactionDetails(TransactionInterface $transaction, $langcode = NULL) {
-    // @todo if additional details field defined and no empty value on field, add values
-    $details = [];
-    return $details + parent::getTransactionDetails($transaction, $langcode);
+    $settings = $transaction->getType()->getPluginSettings();
+
+    // Transaction amount.
+    $amount = $transaction->get($settings['amount'])->value;
+
+    $t_options = $langcode ? ['langcode' => $langcode] : [];
+    $t_args = ['@status' => $transaction->isPending() ? $this->t('(pending)') : ''];
+    if ($amount > 0) {
+      $description = $this->t('Credit transaction @status', $t_args, $t_options);
+    }
+    elseif ($amount < 0) {
+      $description = $this->t('Debit transaction @status', $t_args, $t_options);
+    }
+    else {
+      $description = $this->t('Zero amount transaction @status', $t_args, $t_options);
+    }
+
+    return $description;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getExecutionIndications(TransactionInterface $transaction, $langcode = NULL) {
-    // @todo Show the balance result after this transaction.
-    return parent::getExecutionIndications($transaction, $langcode);
+    $settings = $transaction->getType()->getPluginSettings();
+    // Transaction amount.
+    $amount = $transaction->get($settings['amount'])->value;
+
+    // @todo pretty print of amount according to default display settings
+    $t_args = ['@amount' => $transaction->get($settings['amount'])->getString()];
+    $t_options = $langcode ? ['langcode' => $langcode] : [];
+    if ($amount > 0) {
+      $indication = $this->t('The current balance will increase by @amount.', $t_args, $t_options);
+    }
+    elseif ($amount < 0) {
+      $indication = $this->t('The current balance will decrease by @amount.', $t_args, $t_options);
+    }
+    else {
+      $indication = $this->t('The current balance will not be altered.', [], $t_options);
+    }
+
+    return $indication . ' ' . parent::getExecutionIndications($transaction, $langcode);
   }
 
 }

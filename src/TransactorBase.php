@@ -624,16 +624,18 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    * {@inheritdoc}
    */
   public function getTransactionDescription(TransactionInterface $transaction, $langcode = NULL) {
+    $t_options = $langcode ? ['langcode' => $langcode] : [];
+
     if ($transaction->isNew()) {
       $description = $transaction->isPending()
-        ? $this->t('Unsaved transaction (pending)')
-        : $this->t('Unsaved transaction');
+        ? $this->t('Unsaved transaction (pending)', [], $t_options)
+        : $this->t('Unsaved transaction', [], $t_options);
     }
     else {
       $t_args = ['@number' => $transaction->id()];
       $description = $transaction->isPending()
-        ? $this->t('Transaction @number (pending)', $t_args)
-        : $this->t('Transaction @number', $t_args);
+        ? $this->t('Transaction @number (pending)', $t_args, $t_options)
+        : $this->t('Transaction @number', $t_args, $t_options);
     }
 
     return $description;
@@ -650,7 +652,8 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    * {@inheritdoc}
    */
   public function getExecutionIndications(TransactionInterface $transaction, $langcode = NULL) {
-    return $this->t('The target entity %label may be altered by the transaction.', ['%label' => $transaction->getTargetEntity()->label()]);
+    $t_options = $langcode ? ['langcode' => $langcode] : [];
+    return $this->t('The target entity %label may be altered by the transaction.', ['%label' => $transaction->getTargetEntity()->label()], $t_options);
   }
 
 }
