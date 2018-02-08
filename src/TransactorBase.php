@@ -396,7 +396,6 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
           '#states' => $states,
           '#field_prefix' => '<span dir="ltr">' . $this->fieldPrefix,
           '#field_suffix' => '</span>&lrm;',
-          '#default_value' => preg_replace('@[^a-z0-9_]+@', '_', strtolower($field_info['title'])),
         ],
       ];
     }
@@ -418,8 +417,20 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    *   TRUE if a field with the given name exists in the target entity type.
    */
   public static function fieldExists($field_name, array $form_element, FormStateInterface $form_state) {
-    // Done in form validation. Required data like the current field prefix is
-    // not available in static context.
+    // @todo Take field info from temporary values in form_state and check
+    $transactor_field_name = substr($form_element['#name'], 0, strpos($form_element['#name'], '_field_name'));
+
+    // Do not validate for non-required fields.
+    if (($main_field_value = $form_state->getValue($transactor_field_name)) !== NULL
+      && $main_field_value !== '_create') {
+      return FALSE;
+    }
+
+    if ($field_info = $form_state->getTemporaryValue('field_info_' . $transactor_field_name)) {
+      $field_prefix = \Drupal::service('config.factory')->get('field_ui.settings')->get('field_prefix') ? : 'field_';
+      return FieldStorageConfig::loadByName($field_info['entity_type'], $field_prefix . $field_name) !== NULL;
+    }
+
     return FALSE;
   }
 
