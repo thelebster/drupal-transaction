@@ -4,6 +4,7 @@ namespace Drupal\transaction;
 
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Form\FormStateInterface;
@@ -665,6 +666,17 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
   public function getExecutionIndications(TransactionInterface $transaction, $langcode = NULL) {
     $t_options = $langcode ? ['langcode' => $langcode] : [];
     return $this->t('The target entity %label may be altered by the transaction.', ['%label' => $transaction->getTargetEntity()->label()], $t_options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isApplicable(ContentEntityInterface $entity) {
+    $result = TRUE;
+    if (!empty($this->pluginDefinition['supported_entity_types'])) {
+      $result = in_array($entity->getEntityTypeId(), $this->pluginDefinition['supported_entity_types']);
+    }
+    return $result;
   }
 
 }

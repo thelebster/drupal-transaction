@@ -124,6 +124,7 @@ entity.transaction.add_form:
     _entity_create_access: 'transaction:{transaction_type}'
     _entity_access: 'target_entity.view'
     target_entity: \d+
+    _applicable_transaction_type: 'TRUE'
   options:
     _admin_route: TRUE
     parameters:

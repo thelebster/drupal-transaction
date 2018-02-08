@@ -2,6 +2,7 @@
 
 namespace Drupal\transaction\Entity;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\transaction\TransactionTypeInterface;
 use Drupal\Core\Config\Entity\ConfigEntityBundleBase;
 use Drupal\Core\Plugin\DefaultSingleLazyPluginCollection;
@@ -223,6 +224,17 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
   public function setOptions(array $options) {
     $this->options = $options;
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isApplicable(ContentEntityInterface $entity) {
+    if ($result = in_array($entity->bundle(), $this->getBundles(TRUE))) {
+      $result = $this->getPlugin()->isApplicable($entity);
+    }
+
+    return $result;
   }
 
   /**

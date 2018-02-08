@@ -8,3 +8,9 @@ services:
     arguments: ['@entity_type.manager']
     tags:
       - { name: event_subscriber }
+
+  transaction.applicable_transaction_access:
+    class: Drupal\transaction\Access\ApplicableTransactionAccess
+    arguments: ['@current_route_match', '@request_stack']
+    tags:
+      - { name: access_check, applies_to: _applicable_transaction_type }

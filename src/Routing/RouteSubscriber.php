@@ -50,6 +50,7 @@ class RouteSubscriber extends RouteSubscriberBase {
             '_permission' => "view any $transaction_type_id transaction",
             '_entity_access' => "$target_entity_type_id.view",
             $target_entity_type_id => '\d+',
+            '_applicable_transaction_type' => 'TRUE',
           ])
           ->setOption('_admin_route', TRUE)
           ->setOption('_transaction_transaction_type_id', $transaction_type_id)

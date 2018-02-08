@@ -3,6 +3,7 @@
 namespace Drupal\transaction;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 
 /**
  * Provides an interface defining a type of transaction.
@@ -155,5 +156,16 @@ interface TransactionTypeInterface extends ConfigEntityInterface {
    *   The called transaction type.
    */
   public function setOptions(array $options);
+
+  /**
+   * Check if the type of transaction is applicable to a particular entity.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The content entity to check.
+   *
+   * @return bool
+   *   TRUE if transaction type is applicable to the given entity.
+   */
+  public function isApplicable(ContentEntityInterface $entity);
 
 }

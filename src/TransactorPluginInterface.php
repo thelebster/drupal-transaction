@@ -2,6 +2,7 @@
 
 namespace Drupal\transaction;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -84,5 +85,16 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePlu
    *   A string or translatable markup with the generated message.
    */
   public function getExecutionIndications(TransactionInterface $transaction, $langcode = NULL);
+
+  /**
+   * Check if the transactor is applicable to a particular entity.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The content entity to check.
+   *
+   * @return bool
+   *   TRUE if transactor is applicable to the given entity.
+   */
+  public function isApplicable(ContentEntityInterface $entity);
 
 }

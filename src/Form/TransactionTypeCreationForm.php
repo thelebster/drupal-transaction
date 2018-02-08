@@ -125,7 +125,22 @@ class TransactionTypeCreationForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    // @todo Validate if transactor admits the target entity type
+    if (($transactor_id = $form_state->getValue('transactor'))
+      && ($transactor_info = $this->transactorManager->getTransactor($transactor_id))) {
+      // Check for supported entity types.
+      if (!empty($transactor_info['supported_entity_types'])
+        && !in_array($target_entity_type_id = $form_state->getValue('target_entity_type'), $transactor_info['supported_entity_types'])) {
+        $form_state->setErrorByName('target_entity_type', $this->t('The %type entity type is not supported by the @transactor transactor.', [
+          '%type' => $target_entity_type_id ? $this->entityTypeManager->getDefinition($target_entity_type_id)->getLabel() : $this->t('Undefined'),
+          '@transactor' => $transactor_info['title']
+        ]));
+      }
+    }
+    else {
+      // Empty or invalid transactor.
+      $form_state->setErrorByName('transactor', $this->t('Invalid transactor.'));
+    }
+
   }
 
 }
