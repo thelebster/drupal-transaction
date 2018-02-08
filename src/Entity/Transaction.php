@@ -130,7 +130,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ->setDescription(t('Reference to a transaction operation that describes the transaction.'))
       ->setRequired(FALSE)
       ->setSetting('target_type', 'transaction_operation')
-      ->setSetting('handler', 'default')
+      ->setSetting('handler', 'default:transaction_operation')
       ->setDisplayOptions('view', [
         'type' => 'entity_reference_label',
         'weight' => 0,

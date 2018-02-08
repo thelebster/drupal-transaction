@@ -144,7 +144,7 @@ class TransactorHandler implements TransactorHandlerInterface {
         TransactorHandler::getTokenContextFromEntityTypeId($target_entity_type_id) => $target_entity,
       ];
 
-      $description = $this->token->replace($operation->getDescription(), $token_data, $token_options);
+      $description = strip_tags($this->token->replace($operation->getDescription(), $token_data, $token_options));
     }
     else {
       $description = $this->transactorPlugin($transaction)->getTransactionDescription($transaction, $langcode);
@@ -172,7 +172,7 @@ class TransactorHandler implements TransactorHandlerInterface {
 
       $details = [];
       foreach ($operation->getDetails() as $detail) {
-        $details[] = $this->token->replace($detail, $token_data, $token_options);
+        $details[] = strip_tags($this->token->replace($detail, $token_data, $token_options));
       }
     }
     else {
