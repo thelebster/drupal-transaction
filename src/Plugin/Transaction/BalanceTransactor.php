@@ -31,8 +31,8 @@ use Drupal\transaction\TransactionInterface;
  *     {
  *       "name" = "log_message",
  *       "type" = "string",
- *       "title" = @Translation("Description"),
- *       "description" = @Translation("A text field to store a description for the transaction."),
+ *       "title" = @Translation("Log message"),
+ *       "description" = @Translation("A log message with details about the transaction."),
  *       "required" = FALSE,
  *     },
  *   },

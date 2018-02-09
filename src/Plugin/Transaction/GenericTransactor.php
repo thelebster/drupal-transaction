@@ -44,10 +44,7 @@ class GenericTransactor extends TransactorBase {
     }
 
     // Update the last execute transaction reference in the target entity.
-    /** @var \Drupal\transaction\TransactionTypeInterface $transaction_type */
-    $transaction_type = $transaction->get('type')->entity;
-
-    $settings = $transaction_type->getPluginSettings();
+    $settings = $transaction->getType()->getPluginSettings();
     if (isset($settings['last_transaction'])
       && ($target_entity = $transaction->getTargetEntity())
       && $target_entity->hasField($settings['last_transaction'])) {
@@ -55,6 +52,23 @@ class GenericTransactor extends TransactorBase {
     }
 
     return TransactionInterface::RESULT_OK;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTransactionDetails(TransactionInterface $transaction, $langcode = NULL) {
+    $details = parent::getTransactionDetails($transaction, $langcode);
+
+    // Add the log message to transaction details.
+    $settings = $transaction->getType()->getPluginSettings();
+    if (isset($settings['log_message'])
+      && $transaction->hasField($settings['log_message'])
+      && !$transaction->get($settings['log_message'])->isEmpty()) {
+      $details[] = $transaction->get($settings['log_message'])->getString();
+    }
+
+    return $details;
   }
 
 }
