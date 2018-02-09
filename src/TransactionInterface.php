@@ -216,8 +216,8 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    *   (optional) The user that executes the transaction. The current user by
    *   default.
    *
-   * @return bool
-   *   TRUE if the transaction execution was done, FALSE otherwise.
+   * @return int
+   *   Execution result code if execution was done, FALSE otherwise.
    *
    * @throws \Drupal\transaction\InvalidTransactionStateException
    *   If the transaction is already executed.

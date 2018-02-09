@@ -34,8 +34,8 @@ interface TransactorHandlerInterface extends EntityHandlerInterface {
    *   (optional) The user that executes the transaction. The current user by
    *   default.
    *
-   * @return bool
-   *   TRUE if transaction was executed successful, FALSE otherwise.
+   * @return int
+   *   Result code if transaction was executed, FALSE otherwise.
    *
    * @throws \Drupal\transaction\InvalidTransactionStateException
    *   If the transaction is already executed.

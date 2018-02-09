@@ -140,7 +140,8 @@ class TransactorHandler implements TransactorHandlerInterface {
         && $transaction->getTargetEntity()) {
         $transaction->getTargetEntity()->save();
       }
-      return TRUE;
+
+      return $result_code;
     }
 
     return FALSE;
