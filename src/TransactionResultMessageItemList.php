@@ -5,11 +5,11 @@ namespace Drupal\transaction;
 use Drupal\Core\Field\FieldItemList;
 
 /**
- * Item list for a computed field that displays the transaction description.
+ * Item list for the computed field transaction execution result message.
  *
- * @see \Drupal\transaction\Plugin\Field\FieldType\TransactionDescriptionItem
+ * @see \Drupal\transaction\Plugin\Field\FieldType\TransactionResultMessageItem
  */
-class TransactionDescriptionItemList extends FieldItemList {
+class TransactionResultMessageItemList extends FieldItemList {
 
   /**
    * {@inheritdoc}
@@ -50,7 +50,9 @@ class TransactionDescriptionItemList extends FieldItemList {
    */
   protected function ensurePopulated() {
     if (!isset($this->list[0])) {
-      $this->list[0] = $this->createItem(0);
+      /** @var \Drupal\transaction\TransactionInterface $entity */
+      $entity = $this->getEntity();
+      $this->list[0] = $this->createItem(0, $entity->isNew() ? '' : $entity->getResultMessage(TRUE));
     }
   }
 

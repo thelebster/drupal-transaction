@@ -156,6 +156,24 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
+    // The execution result code.
+    $fields['result_code'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Result code'))
+      ->setReadOnly(TRUE)
+      ->setRequired(TRUE)
+      ->setSetting('unsigned', TRUE);
+
+    // The execution result message.
+    $fields['result_message'] = BaseFieldDefinition::create('string')
+      ->setLabel(t('Result message'))
+      ->setComputed(TRUE)
+      ->setClass('\Drupal\transaction\TransactionResultMessageItemList')
+      ->setDisplayOptions('view', [
+        'type' => 'list_default',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
     // The user that executes the transaction.
     $fields['executor'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Executed by'))
@@ -315,6 +333,32 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    */
   public function execute($save = TRUE, UserInterface $user = NULL) {
     return $this->transactorHandler()->doExecute($this, $save, $user);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getResultCode() {
+    return $this->isPending() ? FALSE : $this->get('result_code')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setResultCode($code) {
+    $this->get('result_code')->setValue($code);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getResultMessage($reset = FALSE) {
+    if ($reset || $this->get('result_message')->isEmpty()) {
+      return $this->transactorHandler()->composeResultMessage($this);
+    }
+
+    return $this->get('result_message')->value;
   }
 
   /**

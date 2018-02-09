@@ -90,7 +90,7 @@ class BalanceTransactor extends GenericTransactor {
       $target_entity->get($settings['target_balance'])->setValue($result);
     }
 
-    return TRUE;
+    return TransactionInterface::RESULT_OK;
   }
 
   /**

@@ -43,6 +43,23 @@ interface TransactorHandlerInterface extends EntityHandlerInterface {
   public function doExecute(TransactionInterface $transaction, $save = TRUE, UserInterface $executor = NULL);
 
   /**
+   * Compose a message that describes the execution result of a transaction.
+   *
+   * @param \Drupal\transaction\TransactionInterface $transaction
+   *   The executed transaction for which to compose the result message.
+   * @param string $langcode
+   *   (optional) The language to use in message composition. Defaults to the
+   *   current content language.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   Translatable markup with the execution result message.
+   *
+   * @throws \Drupal\transaction\InvalidTransactionStateException
+   *   If the transaction is not executed.
+   */
+  public function composeResultMessage(TransactionInterface $transaction, $langcode = NULL);
+
+  /**
    * Compose a human readable description for the given transaction.
    *
    * @param \Drupal\transaction\TransactionInterface $transaction

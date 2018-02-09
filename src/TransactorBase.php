@@ -629,7 +629,20 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    * {@inheritdoc}
    */
   public function executeTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL) {
-    return TRUE;
+    return TransactionInterface::RESULT_OK;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getResultMessage(TransactionInterface $transaction, $langcode = NULL) {
+    if (!$result_code = $transaction->getResultCode()) {
+      return '';
+    }
+
+    return $result_code > 0
+      ? $this->t('Transaction executed successfully.')
+      : $this->t('Transaction execution failed.');
   }
 
   /**

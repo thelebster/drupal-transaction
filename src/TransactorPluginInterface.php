@@ -35,10 +35,24 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePlu
    *   The last executed transaction with the same type and target. Empty if
    *   this is the first one.
    *
-   * @return bool
-   *   TRUE if transaction was executed successful, FALSE otherwise.
+   * @return int
+   *   The execution result code if transaction was executed, FALSE otherwise.
    */
   public function executeTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL);
+
+  /**
+   * Compose a message that describes the execution result of a transaction.
+   *
+   * @param \Drupal\transaction\TransactionInterface $transaction
+   *   The executed transaction for which to compose the result message.
+   * @param string $langcode
+   *   (optional) The language to use in message composition. Defaults to the
+   *   current content language.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup
+   *   Translatable markup with the execution result message.
+   */
+  public function getResultMessage(TransactionInterface $transaction, $langcode = NULL);
 
   /**
    * Compose a human readable description for the given transaction.

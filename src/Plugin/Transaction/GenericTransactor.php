@@ -54,7 +54,7 @@ class GenericTransactor extends TransactorBase {
       $target_entity->get($settings['last_transaction'])->setValue($transaction);
     }
 
-    return TRUE;
+    return TransactionInterface::RESULT_OK;
   }
 
 }

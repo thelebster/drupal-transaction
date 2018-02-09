@@ -106,8 +106,9 @@ class TransactorHandler implements TransactorHandlerInterface {
       ->execute();
     $last_executed = count($result) ? $this->transactionStorage->load(array_pop($result)) : NULL;
 
-    if ($this->transactorPlugin($transaction)->executeTransaction($transaction, $last_executed)) {
+    if ($result_code = $this->transactorPlugin($transaction)->executeTransaction($transaction, $last_executed)) {
       $transaction->setExecutionTime($this->timeService->getRequestTime());
+      $transaction->setResultCode($result_code);
 
       if (!$executor
         && $this->currentUser
@@ -125,6 +126,17 @@ class TransactorHandler implements TransactorHandlerInterface {
     }
 
     return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function composeResultMessage(TransactionInterface $transaction, $langcode = NULL) {
+    if ($transaction->isPending()) {
+      throw new InvalidTransactionStateException('The execution result message can not be composed for a pending execution transaction.');
+    }
+
+    return $this->transactorPlugin($transaction)->getResultMessage($transaction, $langcode);
   }
 
   /**

@@ -22,6 +22,16 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   const PENDING = 0;
 
   /**
+   * Generic result code for successful execution.
+   */
+  const RESULT_OK = 1;
+
+  /**
+   * Generic result code for failed execution.
+   */
+  const RESULT_ERROR = -1;
+
+  /**
    * Returns the transaction type ID.
    *
    * @return string
@@ -213,6 +223,49 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    *   If the transaction is already executed.
    */
   public function execute($save = TRUE, UserInterface $executor = NULL);
+
+  /**
+   * Gets the execution result code.
+   *
+   * Result codes:
+   *  - 1: successful execution
+   *    @see \Drupal\transaction\TransactionInterface::RESULT_OK
+   *  - > 1: transactor specific successful execution result code
+   *  - -1: failed execution
+   *    @see \Drupal\transaction\TransactionInterface::RESULT_ERROR
+   *  - < -1: transactor specific failed execution result code
+   *
+   * @return int
+   *   The result code. FALSE if transaction was no executed.
+   */
+  public function getResultCode();
+
+  /**
+   * Sets the execution result code.
+   *
+   * @see \Drupal\transaction\TransactionInterface::getResultCode() for
+   * information about result codes.
+   *
+   * @param int
+   *   The result code.
+   *
+   * @return \Drupal\transaction\TransactionInterface
+   *   The called transaction.
+   */
+  public function setResultCode($code);
+
+  /**
+   * Gets the execution result message.
+   *
+   * Transactors compose the result message based on the result code.
+   *
+   * @param bool $reset
+   *   Forces to recompose the transaction message.
+   *
+   * @return string
+   *   The execution result message.
+   */
+  public function getResultMessage($reset = FALSE);
 
   /**
    * Gets the transaction execution timestamp.
