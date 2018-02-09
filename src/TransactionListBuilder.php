@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
@@ -144,19 +145,10 @@ class TransactionListBuilder extends EntityListBuilder {
   public function buildHeader() {
     $header = [
       'description' => $this->t('Description'),
-      'creation_date' => [
-        'data' => $this->t('Created'),
-        'class' => [RESPONSIVE_PRIORITY_MEDIUM],
+      'created' => [
+        'data' => $this->t('Created by'),
       ],
-      'author' => [
-        'data' => $this->t('Author'),
-        'class' => [RESPONSIVE_PRIORITY_LOW],
-      ],
-      'execution_date' => $this->t('Executed'),
-      'executor' => [
-        'data' => $this->t('Executor'),
-        'class' => [RESPONSIVE_PRIORITY_LOW],
-      ],
+      'executed' => $this->t('Executed by'),
     ];
 
     // Add transactor fields.
@@ -176,29 +168,59 @@ class TransactionListBuilder extends EntityListBuilder {
 
     $row['description'] = [
       'data' => [
-        '#type' => 'link',
-        '#title' => $entity->label(),
-        '#url' => $entity->toUrl(),
+        '#type' => 'container',
+        'label' => [
+          '#type' => 'link',
+          '#title' => $entity->label(),
+          '#url' => $entity->toUrl(),
+        ],
+        'details' => [
+          '#theme' => 'item_list',
+          '#items' => $entity->getDetails(),
+        ],
       ],
+        '#markup' => 'hola',
     ];
-    $row['creation_date'] = $this->dateFormatter->format($entity->getCreatedTime(), 'short');
-    $row['author'] = [
+
+    $row['created'] = [
       'data' => [
-        '#theme' => 'username',
-        '#account' => $entity->getOwner(),
+        '#type' => 'container',
+        'author' => [
+          '#theme' => 'username',
+          '#account' => $entity->getOwner(),
+        ],
+        'date' => [
+          '#type' => 'container',
+          '#markup' => $this->dateFormatter->format($entity->getCreatedTime(), 'short'),
+        ]
       ],
     ];
+
     $row['execution_date'] = $entity->isPending()
-      ? []
-      : $this->dateFormatter->format($entity->getExecutionTime(), 'short');
-    $row['executor'] = $entity->isPending()
-      ? []
+      ? [
+        'data' => [
+          '#type' => 'html_tag',
+          '#tag' => 'em',
+          '#value' => $this->t('- pending -'),
+        ],
+      ]
       : [
           'data' => [
-          '#theme' => 'username',
-          '#account' => $entity->getExecutor(),
-        ],
-      ];
+            '#type' => 'container',
+            'executor' => [
+              '#theme' => 'username',
+              '#account' => $entity->getExecutor(),
+            ],
+            'date' => [
+              '#type' => 'container',
+              '#markup' => $this->dateFormatter->format($entity->getExecutionTime(), 'short'),
+            ],
+            'result' => [
+              '#type' => 'container',
+              '#markup' => $entity->getResultMessage(),
+            ],
+          ],
+        ];
 
     // Extra field values.
     $plugin_settings = $this->transactionType->getPluginSettings();
