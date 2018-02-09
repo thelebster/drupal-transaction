@@ -5,12 +5,14 @@ namespace Drupal\transaction;
 use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Token;
+use Drupal\transaction\Event\TransactionExecutionEvent;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Component\Datetime\Time;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Transactor entity handler.
@@ -46,6 +48,13 @@ class TransactorHandler implements TransactorHandlerInterface {
   protected $token;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * Creates a new TransactorHandler object.
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $transaction_storage
@@ -56,12 +65,15 @@ class TransactorHandler implements TransactorHandlerInterface {
    *   The current user.
    * @param \Drupal\Core\Utility\Token $token
    *   The token service.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher.
    */
-  public function __construct(EntityStorageInterface $transaction_storage, Time $time_service, AccountInterface $current_user, Token $token) {
+  public function __construct(EntityStorageInterface $transaction_storage, Time $time_service, AccountInterface $current_user, Token $token, EventDispatcherInterface $event_dispatcher) {
     $this->transactionStorage = $transaction_storage;
     $this->timeService = $time_service;
     $this->currentUser = $current_user;
     $this->token = $token;
+    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
@@ -72,7 +84,8 @@ class TransactorHandler implements TransactorHandlerInterface {
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
       $container->get('datetime.time'),
       $container->get('current_user'),
-      $container->get('token')
+      $container->get('token'),
+      $container->get('event_dispatcher')
     );
   }
 
@@ -118,6 +131,10 @@ class TransactorHandler implements TransactorHandlerInterface {
       }
       $transaction->setExecutor($executor ? : User::getAnonymousUser());
 
+      // Launch the transaction execution event.
+      $this->eventDispatcher->dispatch(TransactionExecutionEvent::EVENT_NAME, new TransactionExecutionEvent($transaction));
+
+      // Save the transaction and the updated target entity.
       if ($save
         && $transaction->save()
         && $transaction->getTargetEntity()) {
