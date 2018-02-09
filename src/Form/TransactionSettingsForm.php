@@ -2,6 +2,7 @@
 
 namespace Drupal\transaction\Form;
 
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -38,6 +39,13 @@ class TransactionSettingsForm extends ConfigFormBase {
   protected $cacheTagsInvalidator;
 
   /**
+   * The cache discovery.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface
+   */
+  protected $cacheDiscovery;
+
+  /**
    * Class constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
@@ -48,12 +56,15 @@ class TransactionSettingsForm extends ConfigFormBase {
    *   The translation manager.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
    *   The cache tags invalidator.
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_discovery
+   *   The cache discovery.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, TranslationInterface $string_translation, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, RouteBuilderInterface $route_builder, TranslationInterface $string_translation, CacheTagsInvalidatorInterface $cache_tags_invalidator, CacheBackendInterface $cache_discovery) {
     $this->entityTypeManager = $entity_type_manager;
     $this->routeBuilder = $route_builder;
     $this->stringTranslation = $string_translation;
     $this->cacheTagsInvalidator = $cache_tags_invalidator;
+    $this->cacheDiscovery = $cache_discovery;
   }
 
   /**
@@ -64,7 +75,8 @@ class TransactionSettingsForm extends ConfigFormBase {
       $container->get('entity_type.manager'),
       $container->get('router.builder'),
       $container->get('string_translation'),
-      $container->get('cache_tags.invalidator')
+      $container->get('cache_tags.invalidator'),
+      $container->get('cache.discovery')
     );
   }
 
@@ -172,6 +184,8 @@ class TransactionSettingsForm extends ConfigFormBase {
       $this->cacheTagsInvalidator->invalidateTags(['block_view']);
       // A link template will be added to the target entity type definitions.
       $this->entityTypeManager->clearCachedDefinitions();
+      // Action links has to be re-discovered.
+      $this->cacheDiscovery->invalidateAll();
       // A route per transaction type and target entity will be added.
       $this->routeBuilder->rebuild();
     }
