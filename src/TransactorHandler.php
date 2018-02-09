@@ -2,6 +2,7 @@
 
 namespace Drupal\transaction;
 
+use Drupal\Component\Render\PlainTextOutput;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Token;
 use Drupal\user\Entity\User;
@@ -144,6 +145,7 @@ class TransactorHandler implements TransactorHandlerInterface {
    */
   public function composeDescription(TransactionInterface $transaction, $langcode = NULL) {
     if ($operation = $transaction->getOperation()) {
+      // Description from operation template.
       $token_options = ['clear' => TRUE];
       if ($langcode) {
         $token_options['langcode'] = $langcode;
@@ -156,9 +158,10 @@ class TransactorHandler implements TransactorHandlerInterface {
         TransactorHandler::getTokenContextFromEntityTypeId($target_entity_type_id) => $target_entity,
       ];
 
-      $description = strip_tags($this->token->replace($operation->getDescription(), $token_data, $token_options));
+      $description = PlainTextOutput::renderFromHtml($this->token->replace($operation->getDescription(), $token_data, $token_options));
     }
     else {
+      // Default description from the transactor.
       $description = $this->transactorPlugin($transaction)->getTransactionDescription($transaction, $langcode);
     }
 
@@ -169,6 +172,10 @@ class TransactorHandler implements TransactorHandlerInterface {
    * {@inheritdoc}
    */
   public function composeDetails(TransactionInterface $transaction, $langcode = NULL) {
+    // Details from transactor.
+    $details = $this->transactorPlugin($transaction)->getTransactionDetails($transaction, $langcode);
+
+    // Details from operation details template.
     if ($operation = $transaction->getOperation()) {
       $token_options = ['clear' => TRUE];
       if ($langcode) {
@@ -182,13 +189,9 @@ class TransactorHandler implements TransactorHandlerInterface {
         TransactorHandler::getTokenContextFromEntityTypeId($target_entity_type_id) => $target_entity,
       ];
 
-      $details = [];
       foreach ($operation->getDetails() as $detail) {
-        $details[] = strip_tags($this->token->replace($detail, $token_data, $token_options));
+        $details[] = PlainTextOutput::renderFromHtml($this->token->replace($detail, $token_data, $token_options));
       }
-    }
-    else {
-      $details = $this->transactorPlugin($transaction)->getTransactionDetails($transaction, $langcode);
     }
 
     return $details;
