@@ -489,7 +489,12 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       return $this->transactorHandler()->composeDetails($this);
     }
 
-    return $this->get('details')->getValue();
+    $details = [];
+    foreach ($this->get('details')->getValue() as $detail_value) {
+      $details[] = $detail_value['value'];
+    }
+
+    return $details;
   }
 
   /**
