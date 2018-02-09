@@ -1,13 +1,11 @@
 <?php
 
-namespace Drupal\transaction;
+namespace Drupal\transaction\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
 
 /**
  * Transaction details field type item list.
- *
- * @see \Drupal\transaction\Plugin\Field\FieldType\TransactionDetailsItem
  */
 class TransactionDetailsItemList extends FieldItemList {
 

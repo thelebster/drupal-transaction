@@ -167,7 +167,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
     $fields['result_message'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Result message'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\transaction\TransactionResultMessageItemList')
+      ->setClass('\Drupal\transaction\Plugin\Field\TransactionResultMessageItemList')
       ->setDisplayOptions('view', [
         'type' => 'list_default',
         'weight' => 0,
@@ -197,14 +197,19 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ->setLabel(t('Description'))
       ->setDescription(t('A human-readable description of the transaction.'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\transaction\TransactionDescriptionItemList');
+      ->setClass('\Drupal\transaction\Plugin\Field\TransactionDescriptionItemList')
+      ->setDisplayOptions('view', [
+        'type' => 'list_default',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     // Details (computed).
     $fields['details'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Details'))
       ->setDescription(t('A list of details of the transaction.'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\transaction\TransactionDetailsItemList')
+      ->setClass('\Drupal\transaction\Plugin\Field\TransactionDetailsItemList')
       ->setDisplayOptions('view', [
         'type' => 'list_default',
         'weight' => 0,

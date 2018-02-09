@@ -1,13 +1,11 @@
 <?php
 
-namespace Drupal\transaction;
+namespace Drupal\transaction\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
 
 /**
  * Item list for a computed field that displays the transaction description.
- *
- * @see \Drupal\transaction\Plugin\Field\FieldType\TransactionDescriptionItem
  */
 class TransactionDescriptionItemList extends FieldItemList {
 
@@ -36,21 +34,21 @@ class TransactionDescriptionItemList extends FieldItemList {
   }
 
   /**
-   * Makes sure that the item list is never empty.
-   *
-   * For 'normal' fields that use database storage the field item list is
-   * initially empty, but since this is a computed field this always has a
-   * value.
-   * Make sure the item list is always populated, so this field is not skipped
-   * for rendering in EntityViewDisplay and friends.
-   *
-   * @todo This will no longer be necessary once #2392845 is fixed.
-   *
-   * @see https://www.drupal.org/node/2392845
+   * {@inheritdoc}
+   */
+  public function setValue($values, $notify = TRUE) {
+    // This is a calculated read-only field.
+    return;
+  }
+
+  /**
+   * Calculates the value of the item list and sets it.
    */
   protected function ensurePopulated() {
     if (!isset($this->list[0])) {
-      $this->list[0] = $this->createItem(0);
+      /** @var \Drupal\transaction\TransactionInterface $entity */
+      $entity = $this->getEntity();
+      $this->list[0] = $this->createItem(0, $entity->isNew() ? '' : $entity->getDescription(TRUE));
     }
   }
 

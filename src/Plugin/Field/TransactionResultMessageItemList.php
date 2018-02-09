@@ -1,13 +1,11 @@
 <?php
 
-namespace Drupal\transaction;
+namespace Drupal\transaction\Plugin\Field;
 
 use Drupal\Core\Field\FieldItemList;
 
 /**
  * Item list for the computed field transaction execution result message.
- *
- * @see \Drupal\transaction\Plugin\Field\FieldType\TransactionResultMessageItem
  */
 class TransactionResultMessageItemList extends FieldItemList {
 
@@ -36,17 +34,15 @@ class TransactionResultMessageItemList extends FieldItemList {
   }
 
   /**
-   * Makes sure that the item list is never empty.
-   *
-   * For 'normal' fields that use database storage the field item list is
-   * initially empty, but since this is a computed field this always has a
-   * value.
-   * Make sure the item list is always populated, so this field is not skipped
-   * for rendering in EntityViewDisplay and friends.
-   *
-   * @todo This will no longer be necessary once #2392845 is fixed.
-   *
-   * @see https://www.drupal.org/node/2392845
+   * {@inheritdoc}
+   */
+  public function setValue($values, $notify = TRUE) {
+    // This is a calculated read-only field.
+    return;
+  }
+
+  /**
+   * Calculates the value of the item list and sets it.
    */
   protected function ensurePopulated() {
     if (!isset($this->list[0])) {
