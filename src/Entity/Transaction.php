@@ -4,6 +4,7 @@ namespace Drupal\transaction\Entity;
 
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\transaction\TransactionInterface;
 use Drupal\user\UserInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
@@ -28,7 +29,7 @@ use Drupal\transaction\InvalidTransactionStateException;
  *     "list_builder" = "Drupal\transaction\TransactionListBuilder",
  *     "view_builder" = "Drupal\Core\Entity\EntityViewBuilder",
  *     "access" = "Drupal\transaction\TransactionAccessControlHandler",
- *     "views_data" = "Drupal\views\EntityViewsData",
+ *     "views_data" = "Drupal\transaction\TransactionViewsData",
  *     "form" = {
  *       "default" = "Drupal\transaction\Form\TransactionForm",
  *       "add" = "Drupal\transaction\Form\TransactionForm",
@@ -210,6 +211,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ->setDescription(t('A list of details of the transaction.'))
       ->setComputed(TRUE)
       ->setClass('\Drupal\transaction\Plugin\Field\TransactionDetailsItemList')
+      ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setDisplayOptions('view', [
         'type' => 'list_default',
         'weight' => 0,
