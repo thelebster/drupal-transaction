@@ -105,10 +105,12 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePlu
    *
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The content entity to check.
+   * @param \Drupal\transaction\TransactionTypeInterface $transaction_type
+   *   (optional) Restrict the checking to a particular transaction type.
    *
    * @return bool
    *   TRUE if transactor is applicable to the given entity.
    */
-  public function isApplicable(ContentEntityInterface $entity);
+  public function isApplicable(ContentEntityInterface $entity, TransactionTypeInterface $transaction_type = NULL);
 
 }

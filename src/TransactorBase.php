@@ -684,7 +684,7 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
   /**
    * {@inheritdoc}
    */
-  public function isApplicable(ContentEntityInterface $entity) {
+  public function isApplicable(ContentEntityInterface $entity, TransactionTypeInterface $transaction_type = NULL) {
     $result = TRUE;
     if (!empty($this->pluginDefinition['supported_entity_types'])) {
       $result = in_array($entity->getEntityTypeId(), $this->pluginDefinition['supported_entity_types']);

@@ -231,7 +231,7 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
    */
   public function isApplicable(ContentEntityInterface $entity) {
     if ($result = in_array($entity->bundle(), $this->getBundles(TRUE))) {
-      $result = $this->getPlugin()->isApplicable($entity);
+      $result = $this->getPlugin()->isApplicable($entity, $this);
     }
 
     return $result;
