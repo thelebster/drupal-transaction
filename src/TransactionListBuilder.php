@@ -86,7 +86,8 @@ class TransactionListBuilder extends EntityListBuilder {
       }
 
       // Set transactor fields.
-      if ($plugin_info = $transactor_manager->getTransactor($this->transactionType->getPluginId())) {
+      if ($this->transactionType
+        && $plugin_info = $transactor_manager->getTransactor($this->transactionType->getPluginId())) {
         foreach ($plugin_info['transaction_fields'] as $transactor_field_info) {
           if (!empty($transactor_field_info['list'])) {
             $this->extraFields[$transactor_field_info['name']] = $transactor_field_info['title'];
@@ -223,9 +224,9 @@ class TransactionListBuilder extends EntityListBuilder {
         ];
 
     // Extra field values.
-    $plugin_settings = $this->transactionType->getPluginSettings();
+    $plugin_settings = $this->transactionType ? $this->transactionType->getPluginSettings() : [];
     foreach (array_keys($this->extraFields) as $field_name) {
-      $row['field_' . $field_name]['data'] = $entity->get($plugin_settings[$field_name])->view('list');
+      $row['field_' . $field_name]['data'] = isset($plugin_settings[$field_name]) ? $entity->get($plugin_settings[$field_name])->view('list') : '';
     }
 
     return $row + parent::buildRow($entity);
@@ -240,15 +241,17 @@ class TransactionListBuilder extends EntityListBuilder {
    */
   public function render() {
     $build = parent::render();
-    $build['table']['#empty'] = $this->t('No @type transactions found for @target. <a href=":url">Create one</a>.', [
-      '@type' => $this->transactionType->label(),
-      '@target' => $this->targetEntity->label(),
-      ':url' => Url::fromRoute('entity.transaction.add_form', [
-        'transaction_type' => $this->transactionType->id(),
-        'target_entity_type' => $this->targetEntity->getEntityTypeId(),
-        'target_entity' => $this->targetEntity->id(),
-      ])->toString(),
-    ]);
+    $build['table']['#empty'] = $this->transactionType
+      ? $this->t('No @type transactions found for @target. <a href=":url">Create one</a>.', [
+        '@type' => $this->transactionType->label(),
+        '@target' => $this->targetEntity->label(),
+        ':url' => Url::fromRoute('entity.transaction.add_form', [
+          'transaction_type' => $this->transactionType->id(),
+          'target_entity_type' => $this->targetEntity->getEntityTypeId(),
+          'target_entity' => $this->targetEntity->id(),
+        ])->toString(),
+      ])
+      : $this->t('No transactions found for @target.', ['@target' => $this->targetEntity->label()]);
 
     return $build;
   }
