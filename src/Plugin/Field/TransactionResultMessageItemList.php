@@ -48,7 +48,9 @@ class TransactionResultMessageItemList extends FieldItemList {
     if (!isset($this->list[0])) {
       /** @var \Drupal\transaction\TransactionInterface $entity */
       $entity = $this->getEntity();
-      $this->list[0] = $this->createItem(0, $entity->isNew() ? '' : $entity->getResultMessage(TRUE));
+      if (!$entity->isPending()) {
+        $this->list[0] = $this->createItem(0, $entity->getResultMessage(TRUE));
+      }
     }
   }
 
