@@ -43,7 +43,6 @@ use Drupal\transaction\InvalidTransactionStateException;
  *     "transactor" = "Drupal\transaction\TransactorHandler",
  *   },
  *   base_table = "transaction",
- *   data_table = "transaction_field_data",
  *   translatable = FALSE,
  *   entity_keys = {
  *     "id" = "id",
