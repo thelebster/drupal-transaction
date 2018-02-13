@@ -106,6 +106,7 @@ entity.transaction.collection:
     _permission: 'administer transactions'
     _entity_access: 'target_entity.view'
     target_entity: \d+
+    _applicable_transaction_type: 'TRUE'
   options:
     _admin_route: TRUE
     parameters:
