@@ -93,25 +93,25 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
     }
 
     // Applicable bundles.
-    $bundles = [];
-    $definitions = $this->bundleInfo->getBundleInfo($transaction_type->getTargetEntityTypeId());
-    foreach ($definitions as $bundle_id => $bundle_metadata) {
-      $bundles[$bundle_id] = $bundle_metadata['label'];
+    $target_entity_type = $this->entityTypeManager->getDefinition($transaction_type->getTargetEntityTypeId());
+    if ($target_entity_type->getBundleEntityType()) {
+      $bundles = [];
+      $definitions = $this->bundleInfo->getBundleInfo($target_entity_type->id());
+      foreach ($definitions as $bundle_id => $bundle_metadata) {
+        $bundles[$bundle_id] = $bundle_metadata['label'];
+      }
+
+      if (count($bundles)) {
+        asort($bundles);
+        $form['bundles'] = [
+          '#type' => 'checkboxes',
+          '#title' => $this->t('Bundles'),
+          '#description' => $this->t('Bundles of the target entity type where this transaction type is applicable. Leave empty to apply to all bundles.'),
+          '#options' => $bundles,
+          '#default_value' => $transaction_type->getBundles(),
+        ];
+      }
     }
-    asort($bundles);
-
-    if (!count($bundles)) {
-      $bundles = ['' => $this->t('- None -')];
-    }
-
-    $form['bundles'] = [
-      '#type' => 'checkboxes',
-      '#title' => $this->t('Bundles'),
-      '#description' => $this->t('Bundles of the target entity type where this transaction type is applicable. Leave empty to apply to all bundles.'),
-      '#options' => $bundles,
-      '#default_value' => $transaction_type->getBundles(),
-    ];
-
 
     // Set the transactor plugin id from request arguments on creation.
     if ($transaction_type->isNew()) {
