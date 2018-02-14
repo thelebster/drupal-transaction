@@ -151,6 +151,7 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
         $this->transactor['settings']
       );
     }
+
     return $this->pluginCollection;
   }
 
@@ -193,6 +194,7 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
     if ($plugin_id = $this->getPluginId()) {
       $plugin = $this->getPluginCollection()->get($plugin_id);
     }
+
     return $plugin;
   }
 
@@ -253,9 +255,10 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
    * {@inheritdoc}
    */
   public function calculateDependencies() {
-    // Add dependency on the target entity type.
-    $this->addDependency('config', $this->entityTypeManager()->getDefinition($this->target_entity_type)->getConfigDependencyKey());
-
+    // Add dependency on the target entity type provider.
+    $this->addDependency('module', $this->entityTypeManager()->getDefinition($this->target_entity_type)->getProvider());
+    // Add dependency on the plugin provider.
+    $this->calculatePluginDependencies($this->getPlugin());
     return $this;
   }
 
