@@ -254,6 +254,38 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
   /**
    * {@inheritdoc}
    */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+
+    // Only does something on new entity type creation.
+    if ($update) {
+      return;
+    }
+
+    // Create the list view display mode.
+    /** @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface $list_display_mode */
+    $list_display_mode = $this->entityTypeManager()->getStorage('entity_view_display')->create([
+      'id' => 'transaction.' . $this->id() . '.list',
+      'targetEntityType' => 'transaction',
+      'bundle' => $this->id(),
+      'mode' => 'list',
+      'status' => TRUE,
+    ]);
+
+    // Hide labels for all components in list view mode, table header used instead.
+    foreach ($list_display_mode->getComponents() as $name => $component) {
+      if (isset($component['label']) && $component['label'] != 'hidden') {
+        $component['label'] = 'hidden';
+        $list_display_mode->setComponent($name, $component);
+      }
+    }
+
+    $list_display_mode->save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function calculateDependencies() {
     // Add dependency on the target entity type provider.
     $this->addDependency('module', $this->entityTypeManager()->getDefinition($this->target_entity_type)->getProvider());
