@@ -1,3 +1,7 @@
+-- Transaction 8.x-1.0-alpha2, 2018-02-15 --
+
+- Bug fixes
+
 -- Transaction 8.x-1.0-alpha1, 2018-02-09 --
 
 - Initial 8.x version
