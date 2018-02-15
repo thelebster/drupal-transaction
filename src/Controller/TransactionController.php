@@ -3,37 +3,31 @@
 namespace Drupal\transaction\Controller;
 
 use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\transaction\TransactionTypeInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
  * Provides title callbacks for transaction entities.
  */
-class TransactionController implements ContainerInjectionInterface {
-
-  use StringTranslationTrait;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
+class TransactionController extends ControllerBase {
 
   /**
    * TransactionController constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+   *   The string translation service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->stringTranslation = $string_translation;
   }
 
   /**
@@ -41,7 +35,8 @@ class TransactionController implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('string_translation')
     );
   }
 
