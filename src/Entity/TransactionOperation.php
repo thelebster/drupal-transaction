@@ -142,4 +142,14 @@ class TransactionOperation extends ConfigEntityBase implements TransactionOperat
     return $uri_route_parameters;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    parent::calculateDependencies();
+    $transaction_type = TransactionType::load($this->getTransactionTypeId());
+    $this->addDependency($transaction_type->getConfigDependencyKey(), $transaction_type->getConfigDependencyName());
+    return $this;
+  }
+
 }
