@@ -93,7 +93,7 @@ class TransactorHandler implements TransactorHandlerInterface {
    * {@inheritdoc}
    */
   public function doValidate(TransactionInterface $transaction) {
-    $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getTargetEntityId(), $transaction->getType()->getTargetEntityTypeId());
+    $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getType()->getTargetEntityTypeId(), $transaction->getTargetEntityId());
     return $this->transactorPlugin($transaction)->validateTransaction($transaction, $last_executed);
   }
 
@@ -109,7 +109,7 @@ class TransactorHandler implements TransactorHandlerInterface {
       return FALSE;
     }
 
-    $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getTargetEntityId(), $transaction->getType()->getTargetEntityTypeId());
+    $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getType()->getTargetEntityTypeId(), $transaction->getTargetEntityId());
     if ($result_code = $this->transactorPlugin($transaction)->executeTransaction($transaction, $last_executed)) {
       $transaction->setExecutionTime($this->timeService->getRequestTime());
       $transaction->setResultCode($result_code);
