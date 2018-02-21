@@ -13,6 +13,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Component\Datetime\Time;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Drupal\Core\Database\Transaction;
 
 /**
  * Transactor entity handler.
@@ -93,7 +94,8 @@ class TransactorHandler implements TransactorHandlerInterface {
    * {@inheritdoc}
    */
   public function doValidate(TransactionInterface $transaction) {
-    return $this->transactorPlugin($transaction)->validateTransaction($transaction);
+    $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getTargetEntityId(), $transaction->getType()->getTargetEntityTypeId());
+    return $this->transactorPlugin($transaction)->validateTransaction($transaction, $last_executed);
   }
 
   /**
@@ -108,18 +110,7 @@ class TransactorHandler implements TransactorHandlerInterface {
       return FALSE;
     }
 
-    // Search the last executed transaction of the same type and with the same
-    // target.
-    $result = $this->transactionStorage->getQuery()
-      ->condition('type', $transaction->getTypeId())
-      ->condition('target_entity.target_id', $transaction->getTargetEntityId())
-      ->condition('target_entity.target_type', $transaction->getType()->getTargetEntityTypeId())
-      ->exists('executed')
-      ->range(0, 1)
-      ->sort('executed', 'DESC')
-      ->execute();
-    $last_executed = count($result) ? $this->transactionStorage->load(array_pop($result)) : NULL;
-
+    $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getTargetEntityId(), $transaction->getType()->getTargetEntityTypeId());
     if ($result_code = $this->transactorPlugin($transaction)->executeTransaction($transaction, $last_executed)) {
       $transaction->setExecutionTime($this->timeService->getRequestTime());
       $transaction->setResultCode($result_code);
@@ -303,6 +294,34 @@ class TransactorHandler implements TransactorHandlerInterface {
     }
 
     return $context;
+  }
+
+  /**
+   * Gets the last executed transaction for a given type and target entity.
+   *
+   * @param string $transaction_type
+   *   The transaction type.
+   * @param string $target_entity_type
+   *   The type of the target entity.
+   * @param string $target_entity_id
+   *   The ID of the target entity.
+   *
+   * @return NULL|\Drupal\transaction\TransactionInterface
+   *   The last executed transaction, NULL if not found.
+   */
+  protected function getLastExecutedTransaction($transaction_type, $target_entity_type, $target_entity_id) {
+    // Search the last executed transaction of the same type and with the same
+    // target.
+    $result = $this->transactionStorage->getQuery()
+      ->condition('type', $transaction_type)
+      ->condition('target_entity.target_type', $target_entity_type)
+      ->condition('target_entity.target_id', $target_entity_id)
+      ->exists('executed')
+      ->range(0, 1)
+      ->sort('executed', 'DESC')
+      ->execute();
+
+    return count($result) ? $this->transactionStorage->load(array_pop($result)) : NULL;
   }
 
 }

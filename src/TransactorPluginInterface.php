@@ -27,11 +27,14 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePlu
    *
    * @param \Drupal\transaction\TransactionInterface $transaction
    *   The transaction to execute.
+   * @param \Drupal\transaction\TransactionInterface $last_executed
+   *   The last executed transaction with the same type and target. Empty if
+   *   this is the first one.
    *
    * @return bool
    *   TRUE if transaction is in proper state to be executed, FALSE otherwise.
    */
-  public function validateTransaction(TransactionInterface $transaction);
+  public function validateTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL);
 
   /**
    * Executes a transacion.

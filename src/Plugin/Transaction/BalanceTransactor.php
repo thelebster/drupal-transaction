@@ -60,9 +60,9 @@ class BalanceTransactor extends GenericTransactor {
   /**
    * {@inheritdoc}
    */
-  public function validateTransaction(TransactionInterface $transaction) {
+  public function validateTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL) {
     // @todo check required fields and values
-    return parent::validateTransaction($transaction);
+    return parent::validateTransaction($transaction, $last_executed);
   }
 
   /**
