@@ -4,10 +4,8 @@ namespace Drupal\transaction\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\flag\FlagType\FlagTypePluginManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\transaction\TransactorPluginManager;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
