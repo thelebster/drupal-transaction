@@ -89,6 +89,9 @@ class BalanceTransactor extends GenericTransactor {
     if (isset($settings['target_balance'])
       && $target_entity->hasField($settings['target_balance'])) {
       $target_entity->get($settings['target_balance'])->setValue($result);
+      // Set the property indicating that the target entity was updated on
+      // execution.
+      $transaction->setProperty(TransactionInterface::PROPERTY_TARGET_ENTITY_UPDATED, TRUE);
     }
 
     return TransactorPluginInterface::RESULT_OK;

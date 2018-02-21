@@ -40,6 +40,14 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   const RESULT_ERROR = -1;
 
   /**
+   * Property name, when set indicates that the target entity was updated by
+   * the transactor on transaction execution.
+   *
+   * @var string
+   */
+  const PROPERTY_TARGET_ENTITY_UPDATED = 'transaction_target_entity_updated';
+
+  /**
    * Returns the transaction type ID.
    *
    * @return string

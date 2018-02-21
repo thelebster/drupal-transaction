@@ -13,7 +13,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Component\Datetime\Time;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Drupal\Core\Database\Transaction;
 
 /**
  * Transactor entity handler.
@@ -128,8 +127,9 @@ class TransactorHandler implements TransactorHandlerInterface {
       // Save the transaction and the updated target entity.
       if ($save
         && $transaction->save()
-        && $transaction->getTargetEntity()) {
-        $transaction->getTargetEntity()->save();
+        && $transaction->getProperty(TransactionInterface::PROPERTY_TARGET_ENTITY_UPDATED)
+        && $target_entity = $transaction->getTargetEntity()) {
+        $target_entity->save();
       }
 
       return $result_code;

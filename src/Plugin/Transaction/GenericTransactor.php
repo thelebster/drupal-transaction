@@ -50,6 +50,9 @@ class GenericTransactor extends TransactorBase {
       && ($target_entity = $transaction->getTargetEntity())
       && $target_entity->hasField($settings['last_transaction'])) {
       $target_entity->get($settings['last_transaction'])->setValue($transaction);
+      // Set the property indicating that the target entity was updated on
+      // execution.
+      $transaction->setProperty(TransactionInterface::PROPERTY_TARGET_ENTITY_UPDATED, TRUE);
     }
 
     return TransactorPluginInterface::RESULT_OK;
