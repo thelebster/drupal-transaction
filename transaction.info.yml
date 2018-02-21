@@ -1,7 +1,7 @@
 name: 'Transaction'
 type: module
 description: 'Transactional operations over entities.'
-package: Other
+package: Workflow
 configure: entity.transaction_type.collection
 core: 8.x
 dependencies:
