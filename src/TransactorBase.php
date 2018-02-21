@@ -629,7 +629,7 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    * {@inheritdoc}
    */
   public function executeTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL) {
-    return TransactionInterface::RESULT_OK;
+    return TransactorPluginInterface::RESULT_OK;
   }
 
   /**

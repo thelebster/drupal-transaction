@@ -5,6 +5,7 @@ namespace Drupal\transaction\Plugin\Transaction;
 use Drupal\transaction\TransactorBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\transaction\TransactionInterface;
+use Drupal\transaction\TransactorPluginInterface;
 
 /**
  * Provides a generic transactor.
@@ -51,7 +52,7 @@ class GenericTransactor extends TransactorBase {
       $target_entity->get($settings['last_transaction'])->setValue($transaction);
     }
 
-    return TransactionInterface::RESULT_OK;
+    return TransactorPluginInterface::RESULT_OK;
   }
 
   /**

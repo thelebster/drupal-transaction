@@ -3,6 +3,7 @@
 namespace Drupal\transaction\Plugin\Transaction;
 
 use Drupal\transaction\TransactionInterface;
+use Drupal\transaction\TransactorPluginInterface;
 
 /**
  * Transactor for accounting type transactions.
@@ -90,7 +91,7 @@ class BalanceTransactor extends GenericTransactor {
       $target_entity->get($settings['target_balance'])->setValue($result);
     }
 
-    return TransactionInterface::RESULT_OK;
+    return TransactorPluginInterface::RESULT_OK;
   }
 
   /**

@@ -23,11 +23,19 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
 
   /**
    * Generic result code for successful execution.
+   *
+   * @deprecated as of 1.0-alpha3, will be removed in 1.0-beta1. Instead, use
+   *   consts defined in \Drupal\transaction\TransactorPluginInterface and
+   *   derived transactors.
    */
   const RESULT_OK = 1;
 
   /**
    * Generic result code for failed execution.
+   *
+   * @deprecated as of 1.0-alpha3, will be removed in 1.0-beta1. Instead, use
+   *   consts defined in \Drupal\transaction\TransactorPluginInterface and
+   *   derived transactors.
    */
   const RESULT_ERROR = -1;
 

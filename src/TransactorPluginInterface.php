@@ -13,6 +13,16 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePluginInterface, ContainerFactoryPluginInterface {
 
   /**
+   * Generic result code for successful execution.
+   */
+  const RESULT_OK = 1;
+
+  /**
+   * Generic result code for failed execution.
+   */
+  const RESULT_ERROR = -1;
+
+  /**
    * Validates a transaction for its execution.
    *
    * @param \Drupal\transaction\TransactionInterface $transaction
