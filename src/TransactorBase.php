@@ -17,7 +17,6 @@ use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
-use Drupal\Core\Database\Transaction;
 
 /**
  * Provides a base class for transactor plugins.

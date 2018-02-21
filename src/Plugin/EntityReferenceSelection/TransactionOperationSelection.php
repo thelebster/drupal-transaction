@@ -22,11 +22,9 @@ class TransactionOperationSelection extends DefaultSelection {
    */
   protected function buildEntityQuery($match = NULL, $match_operator = 'CONTAINS') {
     $query = parent::buildEntityQuery($match, $match_operator);
-
-    /** @var \Drupal\transaction\TransactionInterface $transaction */
-    if (($transaction = \Drupal::request()->get('transaction'))
-      && is_object($transaction)) {
-      $query->condition('transaction_type', $transaction->getTypeId());
+    $configuration = $this->getConfiguration();
+    if (isset($configuration['entity'])) {
+      $query->condition('transaction_type', $configuration['entity']->getTypeId());
     }
 
     return $query;
