@@ -6,6 +6,7 @@ use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\transaction\TransactionTypeInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\transaction\TransactionInterface;
 
 /**
  * Form controller for the transaction entity.
@@ -48,6 +49,16 @@ class TransactionForm extends ContentEntityForm {
     $form['uid']['#group'] = 'transaction_authoring';
     $form['created']['#group'] = 'transaction_authoring';
 
+    // Ask for execution.
+    if ($transaction->getType()->getOption('execution') == TransactionTypeInterface::EXECUTION_ASK
+      && $transaction->isPending()) {
+      $form['execute'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Execute'),
+        '#weight' => 99,
+      ];
+    }
+
     return $form;
   }
 
@@ -55,16 +66,37 @@ class TransactionForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $msg_args = [
-      '@type' => $this->entity->get('type')->entity->label(),
-      '%description' => $this->entity->label(),
-    ];
+    /** @var \Drupal\transaction\TransactionInterface $transaction */
+    $transaction = $this->entity;
 
-    drupal_set_message(parent::save($form, $form_state) == SAVED_NEW
+    // Execute if the user indicated to do so.
+    if ($transaction->getType()->getOption('execution') == TransactionTypeInterface::EXECUTION_ASK
+      && $form_state->getValue('execute', FALSE)
+      && $transaction->isPending()) {
+      $executed = $this->entity->execute(FALSE);
+    }
+
+    // Save the transaction.
+    $saved = parent::save($form, $form_state);
+    $msg_args = [
+      '@type' => $transaction->getType()->label(),
+      '%description' => $transaction->label(),
+    ];
+    drupal_set_message($saved == SAVED_NEW
       ? $this->t('New transaction of type @type has been created.', $msg_args)
       : $this->t('Transaction %description updated.', $msg_args));
 
+    // Executed transaction post save actions.
+    if (isset($executed)) {
+      // Execution result message.
+      if ($result_code = $transaction->getResultCode()) {
+        drupal_set_message($transaction->getResultMessage(), $result_code > 0 ? 'status' : 'error');
+      }
+    }
+
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));
+
+    return $saved;
   }
 
 }

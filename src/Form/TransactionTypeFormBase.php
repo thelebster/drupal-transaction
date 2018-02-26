@@ -129,23 +129,22 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
 
     // Add transaction local task (tab) to target entity.
     $form['options']['execution'] = [
-      // @todo immediate execution not yet implemented
-      '#prefix' => '<strong>*** ' . $this->t('Not yet implemented.') . ' ***</strong>',
       '#type' => 'radios',
       '#title' => $this->t('Execution control'),
-      '#description' => $this->t('Execute new transactions as soon as they are created.'),
-      '#default_value' => $transaction_type->getOption('inmediate_execution', TransactionTypeInterface::EXECUTION_STANDARD),
+      '#default_value' => $transaction_type->getOption('execution', TransactionTypeInterface::EXECUTION_STANDARD),
       '#options' => [
-        TransactionTypeInterface::EXECUTION_STANDARD => $this->t('Do not execute'),
+        TransactionTypeInterface::EXECUTION_STANDARD => $this->t('Leave as pending'),
         TransactionTypeInterface::EXECUTION_IMMEDIATE => $this->t('Immediate execution'),
-        TransactionTypeInterface::EXECUTION_SCHEDULED => $this->t('Scheduled execution'),
+        // @todo Scheduled execution to be added
+        //TransactionTypeInterface::EXECUTION_SCHEDULED => $this->t('Scheduled execution'),
         TransactionTypeInterface::EXECUTION_ASK => $this->t('Ask user'),
       ],
     ];
-    $form['options']['execution'][TransactionTypeInterface::EXECUTION_STANDARD]['#description'] = $this->t('Transaction can be executed only after it is created.');
+    $form['options']['execution'][TransactionTypeInterface::EXECUTION_STANDARD]['#description'] = $this->t('The new transaction can be executed only after its creation.');
     $form['options']['execution'][TransactionTypeInterface::EXECUTION_IMMEDIATE]['#description'] = $this->t('The transaction will be executed automatically right after its creation.');
-    $form['options']['execution'][TransactionTypeInterface::EXECUTION_SCHEDULED]['#description'] = $this->t('It will be mandatory to set a scheduled execution date and time when creating the transaction.');
-    $form['options']['execution'][TransactionTypeInterface::EXECUTION_ASK]['#description'] = $this->t('Allows the user to choose how the new transaction will be executed.');
+    // @todo Scheduled execution to be added
+    //$form['options']['execution'][TransactionTypeInterface::EXECUTION_SCHEDULED]['#description'] = $this->t('It will be mandatory to set a scheduled execution date and time when creating the transaction.');
+    $form['options']['execution'][TransactionTypeInterface::EXECUTION_ASK]['#description'] = $this->t('Let the user choose how the new transaction will be executed in the transaction form.');
 
     // Add transactor settings.
     $form = $transaction_type->getPlugin()->buildConfigurationForm($form, $form_state);

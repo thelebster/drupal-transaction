@@ -119,12 +119,9 @@ class TransactorHandler implements TransactorHandlerInterface {
       // Launch the transaction execution event.
       $this->eventDispatcher->dispatch(TransactionExecutionEvent::EVENT_NAME, new TransactionExecutionEvent($transaction));
 
-      // Save the transaction and the updated target entity.
-      if ($save
-        && $transaction->save()
-        && $transaction->getProperty(TransactionInterface::PROPERTY_TARGET_ENTITY_UPDATED)
-        && $target_entity = $transaction->getTargetEntity()) {
-        $target_entity->save();
+      // Save the transaction.
+      if ($save) {
+        $transaction->save();
       }
 
       return TRUE;

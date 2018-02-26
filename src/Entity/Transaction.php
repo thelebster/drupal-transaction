@@ -10,6 +10,8 @@ use Drupal\user\UserInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\transaction\InvalidTransactionStateException;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\transaction\TransactionTypeInterface;
 
 /**
  * Provides the transaction content entity.
@@ -500,6 +502,32 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    */
   public function isPending() {
     return $this->getExecutionTime() === NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage) {
+    // Execute the transaction if inmediate execution is enabled.
+    if ($this->isNew()
+      && $this->getType()->getOption('execution') == TransactionTypeInterface::EXECUTION_IMMEDIATE) {
+      $this->execute(FALSE);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    // Save the target entity if it was updated during the transaction
+    // execution.
+    $from_pending = isset($this->original)
+      && !$this->original->getProperty(TransactionInterface::PROPERTY_TARGET_ENTITY_UPDATED);
+
+    if (($from_pending || !$update)
+      && $this->getProperty(TransactionInterface::PROPERTY_TARGET_ENTITY_UPDATED)) {
+      $this->getTargetEntity()->save();
+    }
   }
 
   /**
