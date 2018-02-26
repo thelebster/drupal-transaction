@@ -26,8 +26,11 @@ class TransactionForm extends ContentEntityForm {
     // This entity form serves specific target entity routes as well, where the
     // target entity argument has the same name that the target entity type.
     $route_options = $this->getRouteMatch()->getRouteObject()->getOptions();
-    if (!$target_entity && isset($route_options['_transaction_target_entity_type_id'])) {
-      $target_entity = $this->getRequest()->get($route_options['_transaction_target_entity_type_id']);
+    if (!$target_entity) {
+      $target_entity_type_id = isset($route_options['_transaction_target_entity_type_id'])
+        ? $route_options['_transaction_target_entity_type_id']
+        : $transaction->getType()->getTargetEntityTypeId();
+      $target_entity = $this->getRequest()->get($target_entity_type_id);
     }
     if ($target_entity) {
       $transaction->setTargetEntity($target_entity);
