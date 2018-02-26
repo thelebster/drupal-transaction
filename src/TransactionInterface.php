@@ -223,17 +223,17 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   /**
    * Executes the transaction.
    *
-   * The transaction execution plugins may block the execution.
-   * @see \Drupal\transaction\TransactorPluginInterface::validateTransaction()
+   * The execution result code will be set or changed.
+   * @see \Drupal\transaction\TransactionInterface::getResultCode()
    *
    * @param bool $save
    *   (optional) Save the transaction after succeeded execution.
    * @param \Drupal\User\UserInterface $executor
-   *   (optional) The user that executes the transaction. The current user by
+   *   (optional) The user that executes the transaction. Current user by
    *   default.
    *
-   * @return int
-   *   Execution result code if execution was done, FALSE otherwise.
+   * @return bool
+   *   TRUE if transaction was executed, FALSE otherwise.
    *
    * @throws \Drupal\transaction\InvalidTransactionStateException
    *   If the transaction is already executed.
@@ -243,16 +243,24 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   /**
    * Gets the execution result code.
    *
-   * Result codes:
-   *  - 1: successful execution
-   *    @see \Drupal\transaction\TransactionInterface::RESULT_OK
+   * Positive integer means that the execution was successful:
+   *  - 1: generic code for successful execution
+   *    @see \Drupal\transaction\TransactorPluginInterface::RESULT_OK
    *  - > 1: transactor specific successful execution result code
-   *  - -1: failed execution
-   *    @see \Drupal\transaction\TransactionInterface::RESULT_ERROR
+   *
+   * Negative integer means that there were errors trying to execute the
+   * transaction:
+   *  - -1: generic code for failed execution
+   *    @see \Drupal\transaction\TransactorPluginInterface::RESULT_ERROR
    *  - < -1: transactor specific failed execution result code
    *
+   * Errors can be recoverable or fatal. If transaction is still pending
+   * execution, there was a recoverable error and the execution can be retried.
+   * If transaction is in executed state, there was a fatal error and the
+   * execution cannot be retried.
+   *
    * @return int
-   *   The result code. FALSE if transaction was no executed.
+   *   The result code. FALSE if transaction execution was never called.
    */
   public function getResultCode();
 
@@ -276,10 +284,11 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    * Transactors compose the result message based on the result code.
    *
    * @param bool $reset
-   *   Forces to recompose the transaction message.
+   *   Forces to recompose the result message.
    *
    * @return string
-   *   The execution result message.
+   *   The execution result message. FALSE if transaction execution was never
+   *   called.
    */
   public function getResultMessage($reset = FALSE);
 

@@ -92,27 +92,22 @@ class TransactorHandler implements TransactorHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function doValidate(TransactionInterface $transaction) {
-    $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getType()->getTargetEntityTypeId(), $transaction->getTargetEntityId());
-    return $this->transactorPlugin($transaction)->validateTransaction($transaction, $last_executed);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function doExecute(TransactionInterface $transaction, $save = TRUE, UserInterface $executor = NULL) {
     if (!$transaction->isPending()) {
       throw new InvalidTransactionStateException('Cannot execute an already executed transaction.');
     }
 
-    if (!$this->doValidate($transaction)) {
-      return FALSE;
-    }
-
     $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getType()->getTargetEntityTypeId(), $transaction->getTargetEntityId());
-    if ($result_code = $this->transactorPlugin($transaction)->executeTransaction($transaction, $last_executed)) {
+    $transactor = $transaction->getType()->getPlugin();
+
+    if ($transactor->executeTransaction($transaction, $last_executed)) {
+      // If no result code set by the transactor, set the generic for
+      // successfull execution.
+      if (!$transaction->getResultCode()) {
+        $transaction->setResultCode(TransactorPluginInterface::RESULT_OK);
+      }
+
       $transaction->setExecutionTime($this->timeService->getRequestTime());
-      $transaction->setResultCode($result_code);
 
       if (!$executor
         && $this->currentUser
@@ -132,7 +127,13 @@ class TransactorHandler implements TransactorHandlerInterface {
         $target_entity->save();
       }
 
-      return $result_code;
+      return TRUE;
+    }
+    else {
+      // If no result code set by the transactor, set the genecir error.
+      if (!$transaction->getResultCode()) {
+        $transaction->setResultCode(TransactorPluginInterface::RESULT_ERROR);
+      }
     }
 
     return FALSE;
@@ -142,11 +143,7 @@ class TransactorHandler implements TransactorHandlerInterface {
    * {@inheritdoc}
    */
   public function composeResultMessage(TransactionInterface $transaction, $langcode = NULL) {
-    if ($transaction->isPending()) {
-      throw new InvalidTransactionStateException('The execution result message can not be composed for a pending execution transaction.');
-    }
-
-    return $this->transactorPlugin($transaction)->getResultMessage($transaction, $langcode);
+    return $transaction->getType()->getPlugin()->getResultMessage($transaction, $langcode);
   }
 
   /**
@@ -171,7 +168,7 @@ class TransactorHandler implements TransactorHandlerInterface {
     }
     else {
       // Default description from the transactor.
-      $description = $this->transactorPlugin($transaction)->getTransactionDescription($transaction, $langcode);
+      $description = $transaction->getType()->getPlugin()->getTransactionDescription($transaction, $langcode);
     }
 
     return $description;
@@ -182,7 +179,7 @@ class TransactorHandler implements TransactorHandlerInterface {
    */
   public function composeDetails(TransactionInterface $transaction, $langcode = NULL) {
     // Details from transactor.
-    $details = $this->transactorPlugin($transaction)->getTransactionDetails($transaction, $langcode);
+    $details = $transaction->getType()->getPlugin()->getTransactionDetails($transaction, $langcode);
 
     // Details from operation details template.
     if ($operation = $transaction->getOperation()) {
@@ -250,19 +247,6 @@ class TransactorHandler implements TransactorHandlerInterface {
     return count($result)
       ? $this->transactionStorage->load(array_pop($result))
       : NULL;
-  }
-
-  /**
-   * Gets the transactor plugin for a given transaction entity.
-   *
-   * @param \Drupal\transaction\TransactionInterface $transaction
-   *   The transaction.
-   *
-   * @return \Drupal\transaction\TransactorPluginInterface
-   *   The transactor plugin for the given transaction;
-   */
-  protected function transactorPlugin(TransactionInterface $transaction) {
-    return $transaction->get('type')->entity->getPlugin();
   }
 
   /**

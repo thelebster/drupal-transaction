@@ -621,15 +621,15 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
   /**
    * {@inheritdoc}
    */
-  public function validateTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL) {
-    return $transaction->isPending() && $transaction->getTargetEntityId();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function executeTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL) {
-    return TransactorPluginInterface::RESULT_OK;
+    if ($result = ($transaction->isPending() && $transaction->getTargetEntityId())) {
+      $transaction->setResultCode(TransactorPluginInterface::RESULT_OK);
+    }
+    else {
+      $transaction->setResultCode(TransactorPluginInterface::RESULT_ERROR);
+    }
+
+    return $result;
   }
 
   /**
@@ -637,12 +637,21 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    */
   public function getResultMessage(TransactionInterface $transaction, $langcode = NULL) {
     if (!$result_code = $transaction->getResultCode()) {
-      return '';
+      return FALSE;
     }
 
-    return $result_code > 0
-      ? $this->t('Transaction executed successfully.')
-      : $this->t('Transaction execution failed.');
+    $t_args = [];
+    $t_options = $langcode ? ['langcode' => $langcode] : [];
+    if ($result_code > 0) {
+      $message = $this->t('Transaction executed successfully.', $t_args, $t_options);
+    }
+    else {
+      $message = $transaction->isPending()
+        ? $this->t('There was a recoverable error in the transaction execution.', $t_args, $t_options)
+        : $this->t('There was a fatal error in the transaction execution.', $t_args, $t_options);
+    }
+
+    return $message;
   }
 
   /**

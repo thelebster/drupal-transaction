@@ -55,7 +55,7 @@ class GenericTransactor extends TransactorBase {
       $transaction->setProperty(TransactionInterface::PROPERTY_TARGET_ENTITY_UPDATED, TRUE);
     }
 
-    return TransactorPluginInterface::RESULT_OK;
+    return TRUE;
   }
 
   /**

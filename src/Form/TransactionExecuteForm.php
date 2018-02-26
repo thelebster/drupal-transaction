@@ -59,7 +59,7 @@ class TransactionExecuteForm extends ContentEntityConfirmFormBase {
       drupal_set_message($this->t('Transaction @label executed successfully.', ['@label' => $transaction->label()]));
     }
     else {
-      drupal_set_message($this->t('There was an error executing @label transaction.', ['@label' => $transaction->label()]));
+      drupal_set_message($transaction->getResultMessage() ? : $this->t('There was an error executing @label transaction.', ['@label' => $transaction->label()]), 'error');
     }
 
     $form_state->setRedirectUrl($transaction->toUrl('collection'));

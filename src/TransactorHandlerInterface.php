@@ -13,17 +13,6 @@ use Drupal\user\UserInterface;
 interface TransactorHandlerInterface extends EntityHandlerInterface {
 
   /**
-   * Validates a transaction for its execution.
-   *
-   * @param \Drupal\transaction\TransactionInterface $transaction
-   *   The transaction to execute.
-   *
-   * @return bool
-   *   TRUE if transaction is in proper state to be executed, FALSE otherwise.
-   */
-  public function doValidate(TransactionInterface $transaction);
-
-  /**
    * Executes a transaction.
    *
    * @param \Drupal\transaction\TransactionInterface $transaction
@@ -34,8 +23,8 @@ interface TransactorHandlerInterface extends EntityHandlerInterface {
    *   (optional) The user that executes the transaction. The current user by
    *   default.
    *
-   * @return int
-   *   Result code if transaction was executed, FALSE otherwise.
+   * @return bool
+   *   TRUE if transaction was executed, FALSE otherwise.
    *
    * @throws \Drupal\transaction\InvalidTransactionStateException
    *   If the transaction is already executed.
@@ -52,10 +41,8 @@ interface TransactorHandlerInterface extends EntityHandlerInterface {
    *   current content language.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   Translatable markup with the execution result message.
-   *
-   * @throws \Drupal\transaction\InvalidTransactionStateException
-   *   If the transaction is not executed.
+   *   Translatable markup with the execution result message, FALSE if
+   *   transaction execution was never called.
    */
   public function composeResultMessage(TransactionInterface $transaction, $langcode = NULL);
 

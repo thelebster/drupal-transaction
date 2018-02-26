@@ -60,14 +60,6 @@ class BalanceTransactor extends GenericTransactor {
   /**
    * {@inheritdoc}
    */
-  public function validateTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL) {
-    // @todo check required fields and values
-    return parent::validateTransaction($transaction, $last_executed);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function executeTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL) {
     if (!parent::executeTransaction($transaction, $last_executed)) {
       return FALSE;
@@ -94,7 +86,7 @@ class BalanceTransactor extends GenericTransactor {
       $transaction->setProperty(TransactionInterface::PROPERTY_TARGET_ENTITY_UPDATED, TRUE);
     }
 
-    return TransactorPluginInterface::RESULT_OK;
+    return TRUE;
   }
 
   /**

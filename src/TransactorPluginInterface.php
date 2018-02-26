@@ -23,7 +23,11 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePlu
   const RESULT_ERROR = -1;
 
   /**
-   * Validates a transaction for its execution.
+   * Executes a transacion.
+   *
+   * By calling this method, the transactor will set the result code in the
+   * transaction.
+   * @see \Drupal\transaction\TransactionInterface::getResultCode()
    *
    * @param \Drupal\transaction\TransactionInterface $transaction
    *   The transaction to execute.
@@ -32,24 +36,7 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePlu
    *   this is the first one.
    *
    * @return bool
-   *   TRUE if transaction is in proper state to be executed, FALSE otherwise.
-   */
-  public function validateTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL);
-
-  /**
-   * Executes a transacion.
-   *
-   * Note that this method does not validates the transaction status prior to
-   * its execution.
-   *
-   * @param \Drupal\transaction\TransactionInterface $transaction
-   *   The transaction to execute.
-   * @param \Drupal\transaction\TransactionInterface $last_executed
-   *   The last executed transaction with the same type and target. Empty if
-   *   this is the first one.
-   *
-   * @return int
-   *   The execution result code if transaction was executed, FALSE otherwise.
+   *   TRUE if transaction was executed, FALSE otherwise.
    */
   public function executeTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL);
 
@@ -63,7 +50,8 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePlu
    *   current content language.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
-   *   Translatable markup with the execution result message.
+   *   Translatable markup with the execution result message, FALSE if
+   *   transaction execution was never called.
    */
   public function getResultMessage(TransactionInterface $transaction, $langcode = NULL);
 

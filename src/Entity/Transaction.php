@@ -160,8 +160,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
     $fields['result_code'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Result code'))
       ->setReadOnly(TRUE)
-      ->setRequired(TRUE)
-      ->setSetting('unsigned', TRUE);
+      ->setRequired(TRUE);
 
     // The execution result message.
     $fields['result_message'] = BaseFieldDefinition::create('string')
@@ -345,7 +344,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    * {@inheritdoc}
    */
   public function getResultCode() {
-    return $this->isPending() ? FALSE : $this->get('result_code')->value;
+    return $this->get('result_code')->value ? : FALSE;
   }
 
   /**
