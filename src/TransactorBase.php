@@ -484,15 +484,7 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
         // New field, get the name from the given machine name in form.
         // Add prefix to the given field name.
         $field_name = $this->fieldPrefix . $values[$key . '_field_name'];
-
-        // Field storage.
-        $new_field = FieldStorageConfig::create([
-          'field_name' => $field_name,
-          'entity_type' => $field_info['entity_type'],
-          'type' => $field_info['type'],
-          'settings' => $field_info['settings'],
-        ]);
-        $new_field->save();
+        $new_field = $this->createFieldStorage($field_name, $field_info);
         $form_state->setValue($key, $new_field->getName());
       }
 
@@ -512,67 +504,21 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
           continue;
         }
 
-        // Set the new transaction type id in reference fields to this
-        // transaction type.
-        $handler_settings = [];
-        if (isset($field_info['handler_settings']) && isset($field_info['handler_settings']['target_bundles'])) {
-          $handler_settings = $field_info['handler_settings'];
-          foreach ($field_info['handler_settings']['target_bundles'] as $target_bundle_key => $target_bundle) {
-            if ($target_bundle === NULL) {
-              $handler_settings['target_bundles'][$target_bundle_key] = $values['id'];
-            }
-          }
-        }
+        $this->createFieldConfig($field_name, $field_info, $bundle, $values[$key . '_label'], $values['id']);
 
-        // Attach to bundle.
-        FieldConfig::create([
-          'field_name' => $field_name,
-          'entity_type' => $field_info['entity_type'],
-          'bundle' => $bundle,
-          'label' => $values[$key . '_label'],
-          'settings' => [
-            'handler' => 'default',
-            'handler_settings' => $handler_settings,
-          ],
-          'required' => $field_info['required'],
-        ])->save();
-
-        // Field form display.
-        $display_id = $field_info['entity_type'] . '.' . $bundle . '.' . 'default';
-        $display_values = [
-          'targetEntityType' => $field_info['entity_type'],
-          'bundle' => $bundle,
-          'mode' => 'default',
-          'status' => TRUE,
-        ];
-
-        // Enable new field in transaction form.
+        // Field display.
         if ($field_info['entity_type'] == 'transaction') {
-          if (!$form_display = EntityFormDisplay::load($display_id)) {
-            $form_display = EntityFormDisplay::create($display_values);
+          // Enable new field in the transaction form.
+          $this->setFieldDisplay($field_name, $field_info, $bundle, 'form');
+
+          // Enable field display in the list view mode if set.
+          if (!empty($field_info['list'])) {
+            $this->setFieldDisplay($field_name, $field_info, $bundle, 'view', 'list', ['label' => 'hidden']);
           }
-
-          $form_display->setComponent(
-            $field_name,
-            [
-              'weight' => 0,
-            ]
-          );
-          $form_display->save();
         }
 
-        // Enable the display of the new field.
-        if (!$view_display = EntityViewDisplay::load($display_id)) {
-          $view_display = EntityViewDisplay::create($display_values);
-        }
-
-        $view_display->setComponent(
-          $field_name,
-          [
-            'weight' => 0,
-          ]
-        );
-        $view_display->save();
+        // Enable field display in the default view mode.
+        $this->setFieldDisplay($field_name, $field_info, $bundle, 'view');
       }
     }
 
@@ -590,6 +536,133 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
     }
 
     $transaction_type->setPluginSettings($settings);
+  }
+
+  /**
+   * Creates a new field.
+   *
+   * @param string $field_name
+   *   The field name.
+   * @param array $field_info
+   *   The field info array as defined in the transactor plugin.
+   *
+   * @return \Drupal\field\Entity\FieldStorageConfig
+   *   The new (saved) field storage object.
+   */
+  protected function createFieldStorage($field_name, array $field_info) {
+    // Field storage.
+    $new_field = FieldStorageConfig::create([
+      'field_name' => $field_name,
+      'entity_type' => $field_info['entity_type'],
+      'type' => $field_info['type'],
+      'settings' => $field_info['settings'],
+    ]);
+    $new_field->save();
+    return $new_field;
+  }
+
+  /**
+   * Creates a field config.
+   *
+   * @param string $field_name
+   *   The field name.
+   * @param array $field_info
+   *   The field info array as defined in the transactor plugin.
+   * @param string $bundle
+   *   The bundle.
+   * @param string $label
+   *   The field label.
+   * @param string $transaction_type_id
+   *   The transaction type ID.
+   *
+   * @return \Drupal\field\Entity\FieldConfig
+   *   The created field config object.
+   */
+  protected function createFieldConfig($field_name, array $field_info, $bundle, $label, $transaction_type_id) {
+    // Set the new transaction type id in reference fields to this
+    // transaction type.
+    $handler_settings = isset($field_info['handler_settings']) ? $field_info['handler_settings'] : [];
+    if (isset($handler_settings['target_bundles'])) {
+      foreach ($handler_settings['target_bundles'] as $target_bundle_key => $target_bundle) {
+        if ($target_bundle === NULL) {
+          $handler_settings['target_bundles'][$target_bundle_key] = $transaction_type_id;
+        }
+      }
+    }
+
+    // Attach to bundle.
+    $new_field = FieldConfig::create([
+      'field_name' => $field_name,
+      'entity_type' => $field_info['entity_type'],
+      'bundle' => $bundle,
+      'label' => $label,
+      'settings' => [
+        'handler' => 'default',
+        'handler_settings' => $handler_settings,
+      ],
+      'required' => $field_info['required'],
+    ]);
+
+    $new_field->save();
+    return $new_field;
+  }
+
+  /**
+   * Enable the display of a field.
+   *
+   * @param string $field_name
+   *   The field name.
+   * @param array $field_info
+   *   The field info array as defined in the transactor plugin.
+   * @param string $bundle
+   *   The bundle.
+   * @param string $type
+   *   (optional) The display type, view or form.
+   * @param string $mode
+   *   (optional) The view mode.
+   * @param array $options
+   *   (optional) Display options.
+   *
+   * @return NULL|\Drupal\Core\Entity\Display\EntityDisplayInterface
+   *   The display config object. NULL on unrecognized display type or mode.
+   */
+  protected function setFieldDisplay($field_name, array $field_info, $bundle, $type = 'view', $mode = 'default', $options = []) {
+    $display_id = $field_info['entity_type'] . '.' . $bundle . '.' . $mode;
+    $display_values = [
+      'targetEntityType' => $field_info['entity_type'],
+      'bundle' => $bundle,
+      'mode' => $mode,
+      'status' => TRUE,
+    ];
+
+    if (!isset($options['weight'])) {
+      $options['weight'] = 0;
+    }
+
+    switch ($type) {
+      case 'form':
+        if (!$display = EntityFormDisplay::load($display_id)) {
+          $display = EntityFormDisplay::create($display_values);
+        }
+
+        $display->setComponent($field_name, $options);
+        $display->save();
+        break;
+
+      case 'view':
+        if (!$display = EntityViewDisplay::load($display_id)) {
+          $display = EntityViewDisplay::create($display_values);
+        }
+
+        $display->setComponent($field_name, $options);
+        $display->save();
+        break;
+
+      default:
+        $display = NULL;
+    }
+
+    return $display;
   }
 
   /**
