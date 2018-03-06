@@ -68,10 +68,7 @@ USAGE
 The basic steps are:
 
  * create a transaction type, choose the target entity type and the desired
-   transactor
-
- * enable the local task for it at the module general settings
-   (admin/config/workflow/transaction/settings). A 'tab' will appear in
+   transactor. By enable the local task link option, 'tab' will appear in
    applicable entities labeled with the transaction type name
 
  * go to any target entity to work with. Create your first transaction in the

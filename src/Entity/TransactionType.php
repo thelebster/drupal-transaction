@@ -22,6 +22,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *   ),
  *   admin_permission = "administer transaction types",
  *   handlers = {
+ *     "storage" = "Drupal\transaction\TransactionTypeStorage",
  *     "list_builder" = "Drupal\transaction\TransactionTypeListBuilder",
  *     "form" = {
  *       "add" = "Drupal\transaction\Form\TransactionTypeAddForm",
@@ -245,9 +246,9 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
 
+    // Sort bundles.
     $bundles = array_filter($this->get('bundles'));
     sort($bundles);
-
     $this->set('bundles', $bundles);
   }
 
@@ -257,7 +258,7 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
 
-    // Only does something on new entity type creation.
+    // Following only applies for new transaction types.
     if ($update) {
       return;
     }

@@ -16,12 +16,6 @@ entity.transaction_type.operation_collection:
   base_route: entity.transaction_type.edit_form
   weight: 10
 
-transaction.settings_form:
-  route_name: transaction.settings_form
-  title: 'Settings'
-  base_route: entity.transaction_type.collection
-  weight: 20
-
 entity.transaction.canonical:
   title: 'View'
   route_name: entity.transaction.canonical

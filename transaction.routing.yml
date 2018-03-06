@@ -88,14 +88,6 @@ entity.transaction_operation.delete_form:
       transaction_type:
         type: entity:transaction_type
 
-transaction.settings_form:
-  path: '/admin/config/workflow/transaction/settings'
-  defaults:
-    _form: '\Drupal\transaction\Form\TransactionSettingsForm'
-    _title:  'Transaction general settings'
-  requirements:
-    _permission: 'administer transaction types'
-
 entity.transaction.collection:
   path: '/transaction/{transaction_type}/{target_entity_type}/{target_entity}'
   defaults:

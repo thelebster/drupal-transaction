@@ -3,29 +3,26 @@
 namespace Drupal\transaction\Form;
 
 use Drupal\Core\Entity\BundleEntityFormBase;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\transaction\TransactionInterface;
 use Drupal\transaction\TransactionTypeInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\ContentEntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\transaction\Entity\TransactionType;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\StringTranslation\TranslationInterface;
 
 /**
  * Base form for transaction type forms.
- *
- * @todo refactor according to notes, this is an old implementation
  */
 abstract class TransactionTypeFormBase extends BundleEntityFormBase {
 
   /**
-   * The entity manager.
+   * The entity type manager.
    *
-   * @var \Drupal\Core\Entity\EntityManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityManager;
+  protected $entityTypeManager;
 
   /**
    * The entity type bundle info.
@@ -37,13 +34,16 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
   /**
    * Constructs the TransactionTypeFormBase object.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+   *   The translation manager.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
    *   The entity type bundle info.
    */
-  public function __construct(EntityManagerInterface $entity_manager, EntityTypeBundleInfoInterface $bundle_info) {
-    $this->entityManager = $entity_manager;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, EntityTypeBundleInfoInterface $bundle_info) {
+    $this->entityTypeManager = $entity_type_manager;
+    $this->stringTranslation = $string_translation;
     $this->bundleInfo = $bundle_info;
   }
 
@@ -52,7 +52,8 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
+      $container->get('string_translation'),
       $container->get('entity_type.bundle.info')
     );
   }
@@ -146,6 +147,14 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
     //$form['options']['execution'][TransactionTypeInterface::EXECUTION_SCHEDULED]['#description'] = $this->t('It will be mandatory to set a scheduled execution date and time when creating the transaction.');
     $form['options']['execution'][TransactionTypeInterface::EXECUTION_ASK]['#description'] = $this->t('Let the user choose how the new transaction will be executed in the transaction form.');
 
+    // Transaction list local task in the target entity.
+    $form['options']['local_task'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Add a local task (tab) to access the transaction list in the target entity'),
+      '#description' => $this->t('The tab will be labeled with the transaction type name. Disable if you have your own views based transaction list.'),
+      '#default_value' => !empty($transaction_type->getOption('local_task')),
+    ];
+
     // Add transactor settings.
     $form = $transaction_type->getPlugin()->buildConfigurationForm($form, $form_state);
 
@@ -211,8 +220,6 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
       $this->logger('transaction')->notice('New transaction type %label with transactor @transactor and target entity type @target has been added.', $logger_args);
     }
 
-    $this->entityManager->clearCachedDefinitions();
-    $this->entityManager->clearCachedFieldDefinitions();
     $form_state->setRedirectUrl($transaction_type->toUrl('collection'));
   }
 
