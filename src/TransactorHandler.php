@@ -20,6 +20,13 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class TransactorHandler implements TransactorHandlerInterface {
 
   /**
+   * The transaction service.
+   *
+   * @var \Drupal\transaction\TransactionServiceInterface
+   */
+  protected $transactionService;
+
+  /**
    * The transaction entity storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -57,6 +64,8 @@ class TransactorHandler implements TransactorHandlerInterface {
   /**
    * Creates a new TransactorHandler object.
    *
+   * @param \Drupal\transaction\TransactionServiceInterface $transaction_service
+   *   The transaction service.
    * @param \Drupal\Core\Entity\EntityStorageInterface $transaction_storage
    *   The transaction entity type storage.
    * @param \Drupal\Component\Datetime\Time $time_service
@@ -68,7 +77,8 @@ class TransactorHandler implements TransactorHandlerInterface {
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.
    */
-  public function __construct(EntityStorageInterface $transaction_storage, Time $time_service, AccountInterface $current_user, Token $token, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(TransactionServiceInterface $transaction_service, EntityStorageInterface $transaction_storage, Time $time_service, AccountInterface $current_user, Token $token, EventDispatcherInterface $event_dispatcher) {
+    $this->transactionService = $transaction_service;
     $this->transactionStorage = $transaction_storage;
     $this->timeService = $time_service;
     $this->currentUser = $current_user;
@@ -81,6 +91,7 @@ class TransactorHandler implements TransactorHandlerInterface {
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
+      $container->get('transaction'),
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
       $container->get('datetime.time'),
       $container->get('current_user'),
@@ -97,8 +108,9 @@ class TransactorHandler implements TransactorHandlerInterface {
       throw new InvalidTransactionStateException('Cannot execute an already executed transaction.');
     }
 
-    $last_executed = $this->getLastExecutedTransaction($transaction->getTypeId(), $transaction->getType()->getTargetEntityTypeId(), $transaction->getTargetEntityId());
-    $transactor = $transaction->getType()->getPlugin();
+    $transaction_type = $transaction->getType();
+    $last_executed = $this->transactionService->getLastExecutedTransaction($transaction->getTargetEntityId(), $transaction_type);
+    $transactor = $transaction_type->getPlugin();
 
     if ($transactor->executeTransaction($transaction, $last_executed)) {
       // If no result code set by the transactor, set the generic for
@@ -275,34 +287,6 @@ class TransactorHandler implements TransactorHandlerInterface {
     }
 
     return $context;
-  }
-
-  /**
-   * Gets the last executed transaction for a given type and target entity.
-   *
-   * @param string $transaction_type
-   *   The transaction type.
-   * @param string $target_entity_type
-   *   The type of the target entity.
-   * @param string $target_entity_id
-   *   The ID of the target entity.
-   *
-   * @return NULL|\Drupal\transaction\TransactionInterface
-   *   The last executed transaction, NULL if not found.
-   */
-  protected function getLastExecutedTransaction($transaction_type, $target_entity_type, $target_entity_id) {
-    // Search the last executed transaction of the same type and with the same
-    // target.
-    $result = $this->transactionStorage->getQuery()
-      ->condition('type', $transaction_type)
-      ->condition('target_entity.target_type', $target_entity_type)
-      ->condition('target_entity.target_id', $target_entity_id)
-      ->exists('executed')
-      ->range(0, 1)
-      ->sort('executed', 'DESC')
-      ->execute();
-
-    return count($result) ? $this->transactionStorage->load(array_pop($result)) : NULL;
   }
 
 }

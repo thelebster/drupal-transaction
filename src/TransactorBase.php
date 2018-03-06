@@ -33,6 +33,13 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
   protected $transactionStorage;
 
   /**
+   * The transaction service.
+   *
+   * @var \Drupal\transaction\TransactionServiceInterface
+   */
+  protected $transactionService;
+
+  /**
    * The field manager.
    *
    * @var \Drupal\Core\Entity\EntityFieldManagerInterface
@@ -56,10 +63,11 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TranslationInterface $string_translation, EntityStorageInterface $transaction_storage, EntityFieldManagerInterface $field_manager, AccountInterface $current_user, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, TranslationInterface $string_translation, EntityStorageInterface $transaction_storage, TransactionServiceInterface $transaction_service, EntityFieldManagerInterface $field_manager, AccountInterface $current_user, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->stringTranslation = $string_translation;
     $this->transactionStorage = $transaction_storage;
+    $this->transactionService = $transaction_service;
     $this->configuration += $this->defaultConfiguration();
     $this->fieldManager = $field_manager;
     $this->currentUser = $current_user;
@@ -76,6 +84,7 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
       $plugin_definition,
       $container->get('string_translation'),
       $container->get('entity_type.manager')->getStorage('transaction'),
+      $container->get('transaction'),
       $container->get('entity_field.manager'),
       $container->get('current_user'),
       $container->get('config.factory')

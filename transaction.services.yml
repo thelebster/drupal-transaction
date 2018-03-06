@@ -1,4 +1,8 @@
 services:
+  transaction:
+    class: Drupal\transaction\TransactionService
+    arguments: ['@entity_type.manager']
+
   plugin.manager.transaction.transactor:
     class: Drupal\transaction\TransactorPluginManager
     arguments: ['@container.namespaces', '@cache.discovery', '@module_handler']
