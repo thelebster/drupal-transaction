@@ -283,40 +283,51 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    *   An array with the names of matching fields keyed the field id.
    */
   protected function getAvailableFields($entity_type_id, $field_type, $bundles = [], array $settings_match = []) {
-    // Params adjustment.
-    if (!empty($bundles) && !is_array($bundles)) {
-      $bundles = [$bundles];
-    }
-
     $options = [];
-    $fields = $this->fieldManager->getFieldMapByFieldType($field_type);
-    if (!isset($fields[$entity_type_id])) {
-      return $options;
+
+    if (!empty($bundles)) {
+      // Params adjustment.
+      if (is_string($bundles)) {
+       $bundles = [$bundles];
+      }
+
+      $fields_by_type = $this->fieldManager->getFieldMapByFieldType($field_type);
+      // We have filter by bundle but there are no fields of the given type in
+      // any bundle of the entity type.
+      if (!isset($fields_by_type[$entity_type_id])) {
+        return $options;
+      }
     }
 
-    foreach ($fields[$entity_type_id] as $field_name => $field) {
-      if (!$field_definition = FieldStorageConfig::loadByName($entity_type_id, $field_name)) {
+    // Iterate over the storage definitions of the entity fields.
+    foreach ($this->fieldManager->getFieldStorageDefinitions($entity_type_id) as $field_name => $field_storage) {
+      if ($field_storage->getType() != $field_type) {
         continue;
       }
 
       // Filter by bundle.
       foreach ($bundles as $bundle) {
-        if (!isset($field['bundles'][$bundle])) {
+        if (!isset($fields_by_type[$entity_type_id]['bundles'][$bundle])) {
           continue 2;
+        }
+        // Load the field config for the first bundle.
+        if (!isset($field_config)) {
+          $field_config = FieldConfig::loadByName($entity_type_id, $bundle, $field_name);
         }
       }
 
       // Filter by settings.
       foreach ($settings_match as $key => $value) {
-        if ($field_definition->getSetting($key) != $value) {
+        if ($field_storage->getSetting($key) != $value) {
           continue 2;
         }
       }
 
-      $field_config = FieldConfig::loadByName($entity_type_id, array_pop($field['bundles']), $field_name);
-      $options[$field_name] = $field_config
+      $options[$field_name] = isset($field_config)
         ? $field_config->label() . ' (' . $field_name . ')'
         : $field_name;
+
+      unset($field_config);
     }
 
     return $options;
