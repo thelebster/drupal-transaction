@@ -20,21 +20,12 @@ class TransactionForm extends ContentEntityForm {
     /** @var \Drupal\transaction\TransactionInterface $transaction */
     $transaction = $this->entity;
 
-    $form = parent::buildForm($form, $form_state);
-
-    // Set the target entity.
-    // This entity form serves specific target entity routes as well, where the
-    // target entity argument has the same name that the target entity type.
-    $route_options = $this->getRouteMatch()->getRouteObject()->getOptions();
-    if (!$target_entity) {
-      $target_entity_type_id = isset($route_options['_transaction_target_entity_type_id'])
-        ? $route_options['_transaction_target_entity_type_id']
-        : $transaction->getType()->getTargetEntityTypeId();
-      $target_entity = $this->getRequest()->get($target_entity_type_id);
-    }
+    // Set the target entity in the transaction.
     if ($target_entity) {
       $transaction->setTargetEntity($target_entity);
     }
+
+    $form = parent::buildForm($form, $form_state);
 
     // Grouping status & authoring in tabs.
     $form['advanced'] = [
@@ -63,6 +54,26 @@ class TransactionForm extends ContentEntityForm {
     }
 
     return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function prepareEntity() {
+    /** @var \Drupal\transaction\TransactionInterface $transaction */
+    $transaction = $this->entity;
+
+    // This entity form serves specific target entity routes as well, where the
+    // target entity argument has the same name that the target entity type.
+    if (!$transaction->getTargetEntityId()) {
+      $route_options = $this->getRouteMatch()->getRouteObject()->getOptions();
+      $target_entity_type_id = isset($route_options['_transaction_target_entity_type_id'])
+        ? $route_options['_transaction_target_entity_type_id']
+        : $transaction->getType()->getTargetEntityTypeId();
+      if ($target_entity = $this->getRequest()->get($target_entity_type_id)) {
+        $transaction->setTargetEntity($target_entity);
+      }
+    }
   }
 
   /**
