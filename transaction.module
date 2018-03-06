@@ -1,6 +1,7 @@
 <?php
 
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\transaction\TransactionInterface;
 
 /**
  * Implements hook_field_formatter_info_alter().
@@ -23,4 +24,26 @@ function transaction_entity_type_alter(array &$entity_types) {
     list($transaction_type_id, $target_entity_type_id) = explode('-', $tab);
     $entity_types[$target_entity_type_id]->setLinkTemplate("transaction-$transaction_type_id", "/transaction/$transaction_type_id/$target_entity_type_id/{{$target_entity_type_id}}");
   }
+}
+
+/**
+ * Implements hook_inline_entity_form_entity_form_alter().
+ *
+ * Provides basic integration with the inline_entity_form module. For full
+ * integration, enable the transation_ief submodule.
+ */
+function transaction_inline_entity_form_entity_form_alter(array $entity_form, FormStateInterface $form_state) {
+  // Transaction IEF submodule makes this better.
+  if (extension_loaded('transaction_ief')) {
+    return $entity_form;
+  }
+
+  // Set the target entity type in the transaction if not set.
+  $entity = $entity_form['#entity'];
+  if ($entity instanceof TransactionInterface
+    && !$entity->getTargetEntityId()) {
+    $entity->setTargetEntity(\Drupal::request()->get($entity->getType()->getTargetEntityTypeId()));
+  }
+
+  return $entity_form;
 }
