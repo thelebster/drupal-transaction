@@ -508,6 +508,8 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
+    parent::preSave($storage);
+
     // Execute the transaction if inmediate execution is enabled.
     if ($this->isNew()
       && $this->getType()->getOption('execution') == TransactionTypeInterface::EXECUTION_IMMEDIATE) {
@@ -519,6 +521,8 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    * {@inheritdoc}
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+
     // Save the target entity if it was updated during the transaction
     // execution.
     $from_pending = isset($this->original)
