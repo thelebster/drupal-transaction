@@ -48,6 +48,11 @@ class TransactionViewsData extends EntityViewsData {
       ],
     ];
 
+    // Allow the NULL value in executor, execution timestamp and result code.
+    $data['transaction']['executed']['filter']['allow empty'] = TRUE;
+    $data['transaction']['result_code']['filter']['allow empty'] = TRUE;
+    $data['transaction']['executor']['filter']['allow empty'] = TRUE;
+
     return $data;
   }
 
