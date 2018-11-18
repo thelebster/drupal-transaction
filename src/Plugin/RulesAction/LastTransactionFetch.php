@@ -76,8 +76,8 @@ class LastTransactionFetch extends RulesActionBase implements ContainerFactoryPl
    * {@inheritdoc}
    */
   public function refineContextDefinitions(array $selected_data) {
-    if (isset($this->pluginDefinition['transaction_type_id'])) {
-      $data_type = 'entity:transaction:' . $this->pluginDefinition['transaction_type_id'];
+    if ($transaction_type_id = $this->getContextValue('transaction_type_id')) {
+      $data_type = 'entity:transaction:' . $transaction_type_id;
       $this->pluginDefinition['provides']['transaction_last_executed']->setDataType($data_type);
     }
   }
