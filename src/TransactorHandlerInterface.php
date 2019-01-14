@@ -28,6 +28,8 @@ interface TransactorHandlerInterface extends EntityHandlerInterface {
    *
    * @throws \Drupal\transaction\InvalidTransactionStateException
    *   If the transaction is already executed.
+   * @throws \Drupal\transaction\Exception\ExecutionTimeoutException
+   *   If the transaction execution time exceeds the allowed threshold.
    */
   public function doExecute(TransactionInterface $transaction, $save = TRUE, UserInterface $executor = NULL);
 

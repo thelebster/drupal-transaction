@@ -3,9 +3,11 @@
 namespace Drupal\transaction;
 
 use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Utility\Token;
 use Drupal\transaction\Event\TransactionExecutionEvent;
+use Drupal\transaction\Exception\ExecutionTimeoutException;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -62,6 +64,13 @@ class TransactorHandler implements TransactorHandlerInterface {
   protected $eventDispatcher;
 
   /**
+   * The lock service.
+   *
+   * @var \Drupal\Core\Lock\LockBackendInterface
+   */
+  protected $lock;
+
+  /**
    * Creates a new TransactorHandler object.
    *
    * @param \Drupal\transaction\TransactionServiceInterface $transaction_service
@@ -76,14 +85,17 @@ class TransactorHandler implements TransactorHandlerInterface {
    *   The token service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.
+   * @param \Drupal\Core\Lock\LockBackendInterface $lock
+   *   The lock service.
    */
-  public function __construct(TransactionServiceInterface $transaction_service, EntityStorageInterface $transaction_storage, Time $time_service, AccountInterface $current_user, Token $token, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(TransactionServiceInterface $transaction_service, EntityStorageInterface $transaction_storage, Time $time_service, AccountInterface $current_user, Token $token, EventDispatcherInterface $event_dispatcher, LockBackendInterface $lock) {
     $this->transactionService = $transaction_service;
     $this->transactionStorage = $transaction_storage;
     $this->timeService = $time_service;
     $this->currentUser = $current_user;
     $this->token = $token;
     $this->eventDispatcher = $event_dispatcher;
+    $this->lock = $lock;
   }
 
   /**
@@ -96,7 +108,8 @@ class TransactorHandler implements TransactorHandlerInterface {
       $container->get('datetime.time'),
       $container->get('current_user'),
       $container->get('token'),
-      $container->get('event_dispatcher')
+      $container->get('event_dispatcher'),
+      $container->get('lock')
     );
   }
 
@@ -104,7 +117,15 @@ class TransactorHandler implements TransactorHandlerInterface {
    * {@inheritdoc}
    */
   public function doExecute(TransactionInterface $transaction, $save = TRUE, UserInterface $executor = NULL) {
+    // Locks the transactional flow for execution, preventing other transactions
+    // of the same flow to be executed simultaneously.
+    if (!$execution_lock_name = $this->executionLockAcquire($transaction)) {
+      throw new ExecutionTimeoutException('Unable to lock the transactional flow for transaction execution.');
+    }
+
     if (!$transaction->isPending()) {
+      // Releases the execution lock.
+      $this->lock->release($execution_lock_name);
       throw new InvalidTransactionStateException('Cannot execute an already executed transaction.');
     }
 
@@ -114,7 +135,7 @@ class TransactorHandler implements TransactorHandlerInterface {
 
     if ($transactor->executeTransaction($transaction, $last_executed)) {
       // If no result code set by the transactor, set the generic for
-      // successfull execution.
+      // successful execution.
       if (!$transaction->getResultCode()) {
         $transaction->setResultCode(TransactorPluginInterface::RESULT_OK);
       }
@@ -136,13 +157,42 @@ class TransactorHandler implements TransactorHandlerInterface {
         $transaction->save();
       }
 
-      return TRUE;
+      $executed = TRUE;
     }
     else {
-      // If no result code set by the transactor, set the genecir error.
+      // If no result code set by the transactor, set the generic error.
       if (!$transaction->getResultCode()) {
         $transaction->setResultCode(TransactorPluginInterface::RESULT_ERROR);
       }
+
+      $executed = FALSE;
+    }
+
+    // Releases the execution lock.
+    $this->lock->release($execution_lock_name);
+
+    return $executed;
+  }
+
+  /**
+   * Locks a transaction for execution.
+   *
+   * @param \Drupal\transaction\TransactionInterface $transaction
+   *   The transaction to lock.
+   *
+   * @return string|FALSE
+   *   The lock name if the transaction where successfully locked for execution,
+   *   FALSE if the transaction is locked and the locking timeout was exceeded.
+   */
+  protected function executionLockAcquire($transaction) {
+    $lock_name = 'transaction_'
+      . $transaction->getTypeId() . '_'
+      . $transaction->getTargetEntityId();
+    $lock_time = ini_get('max_execution_time') ?: 3600;
+
+    if ($this->lock->acquire($lock_name, $lock_time)
+      || (!$this->lock->wait($lock_name) && $this->lock->acquire($lock_name, $lock_time))) {
+      return $lock_name;
     }
 
     return FALSE;
