@@ -122,7 +122,10 @@ class TransactionCreate extends RulesActionBase implements ContainerFactoryPlugi
       foreach ($values as $key => $value) {
         if (strpos($key, $field_prefix) === 0) {
           $transactor_field_name = substr($key, strlen($field_prefix));
-          $entity->get($settings[$transactor_field_name])->setValue($value);
+          if (!empty($settings[$transactor_field_name])
+            && $entity->hasField($settings[$transactor_field_name])) {
+            $entity->get($settings[$transactor_field_name])->setValue($value);
+          }
         }
       }
     }
