@@ -8,6 +8,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\Entity\EntityFormDisplay;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Element;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -528,9 +529,12 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
       if (!isset($form[$group])) {
         continue;
       }
-      foreach (array_keys($form[$group]) as $key) {
+      foreach (Element::children($form[$group]) as $key) {
         if ($value = $form_state->getValue($key)) {
           $settings[$key] = $value;
+        }
+        else {
+          unset($settings[$key]);
         }
       }
     }
