@@ -76,6 +76,17 @@ class TransactionExecute extends RulesActionBase implements ContainerFactoryPlug
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function refineContextDefinitions(array $selected_data) {
+    if (isset($selected_data['transaction'])
+      && $bundle_constraint = $selected_data['transaction']->getConstraint('Bundle')) {
+      $data_type = 'entity:transaction:' . $bundle_constraint[0];
+      $this->pluginDefinition['context']['transaction']->setDataType($data_type);
+    }
+  }
+
+  /**
    * Executes a transaction.
    *
    * @param \Drupal\transaction\TransactionInterface $transaction
