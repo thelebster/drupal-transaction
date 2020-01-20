@@ -30,11 +30,11 @@ function transaction_entity_type_alter(array &$entity_types) {
  * Implements hook_inline_entity_form_entity_form_alter().
  *
  * Provides basic integration with the inline_entity_form module. For full
- * integration, enable the transation_ief submodule.
+ * integration, enable the transaction_ief submodule.
  */
 function transaction_inline_entity_form_entity_form_alter(array $entity_form, FormStateInterface $form_state) {
   // Transaction IEF submodule makes this better.
-  if (extension_loaded('transaction_ief')) {
+  if (\Drupal::moduleHandler()->moduleExists('transaction_ief')) {
     return $entity_form;
   }
 
