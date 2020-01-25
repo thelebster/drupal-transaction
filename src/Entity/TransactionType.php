@@ -258,15 +258,21 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
 
-    // Following only applies for new transaction types.
-    if ($update) {
+    // Following only applies to transaction type creation outside config sync.
+    if ($update || \Drupal::isConfigSyncing()) {
       return;
     }
 
-    // Create the list view display mode.
+    // Create the list view display mode if it does not exist.
+    $entity_display_id = 'transaction.' . $this->id() . '.list';
+    $entity_view_display_storage = $this->entityTypeManager()->getStorage('entity_view_display');
+    if ($entity_view_display_storage->load($entity_display_id)) {
+      return;
+    }
+
     /** @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface $list_display_mode */
-    $list_display_mode = $this->entityTypeManager()->getStorage('entity_view_display')->create([
-      'id' => 'transaction.' . $this->id() . '.list',
+    $list_display_mode = $entity_view_display_storage->create([
+      'id' => $entity_display_id,
       'targetEntityType' => 'transaction',
       'bundle' => $this->id(),
       'mode' => 'list',
