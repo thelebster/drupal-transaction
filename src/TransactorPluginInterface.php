@@ -2,15 +2,16 @@
 
 namespace Drupal\transaction;
 
+use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Component\Plugin\DependentPluginInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\Component\Plugin\ConfigurablePluginInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 
 /**
  * Defines the interface for transactor plugins.
  */
-interface TransactorPluginInterface extends PluginFormInterface, ConfigurablePluginInterface, ContainerFactoryPluginInterface {
+interface TransactorPluginInterface extends PluginFormInterface, ConfigurableInterface, DependentPluginInterface, ContainerFactoryPluginInterface {
 
   /**
    * Generic result code for successful execution.

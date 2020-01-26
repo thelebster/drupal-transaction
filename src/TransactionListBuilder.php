@@ -180,7 +180,6 @@ class TransactionListBuilder extends EntityListBuilder {
           '#items' => $entity->getDetails(),
         ],
       ],
-        '#markup' => 'hola',
     ];
 
     $row['created'] = [

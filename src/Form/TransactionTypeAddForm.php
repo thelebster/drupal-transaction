@@ -3,9 +3,6 @@
 namespace Drupal\transaction\Form;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\Core\Entity\Query\QueryFactory;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Builds the form to create a transaction type.

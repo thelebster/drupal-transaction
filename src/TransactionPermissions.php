@@ -2,30 +2,58 @@
 
 namespace Drupal\transaction;
 
-use Drupal\Core\Routing\UrlGeneratorTrait;
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\transaction\Entity\TransactionType;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Provides dynamic permissions for transactions of different types.
  */
-class TransactionPermissions {
+class TransactionPermissions implements ContainerInjectionInterface {
 
   use StringTranslationTrait;
-  use UrlGeneratorTrait;
+
+  /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
+   * MediaPermissions constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager service.
+   */
+  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
+    $this->entityTypeManager = $entity_type_manager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static($container->get('entity_type.manager'));
+  }
 
   /**
    * Returns an array of transaction type permissions.
    *
    * @return array
    *   The transaction type permissions.
-   *   @see \Drupal\user\PermissionHandlerInterface::getPermissions()
+   *
+   * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
    */
   public function transactionTypePermissions() {
     $perms = [];
+
     // Generate transaction permissions for all transaction types.
-    foreach (TransactionType::loadMultiple() as $type) {
-      $perms += $this->buildPermissions($type);
+    $transaction_types = $this->entityTypeManager
+      ->getStorage('transaction_type')->loadMultiple();
+    foreach ($transaction_types as $transaction_type) {
+      $perms += $this->buildPermissions($transaction_type);
     }
 
     return $perms;

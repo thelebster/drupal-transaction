@@ -4,6 +4,7 @@ namespace Drupal\transaction\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\transaction\TransactionTypeInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\transaction\TransactionInterface;
@@ -96,7 +97,7 @@ class TransactionForm extends ContentEntityForm {
       '@type' => $transaction->getType()->label(),
       '%description' => $transaction->label(),
     ];
-    drupal_set_message($saved == SAVED_NEW
+    $this->messenger()->addStatus($saved == SAVED_NEW
       ? $this->t('New transaction of type @type has been created.', $msg_args)
       : $this->t('Transaction %description updated.', $msg_args));
 
@@ -104,7 +105,9 @@ class TransactionForm extends ContentEntityForm {
     if (isset($executed)) {
       // Execution result message.
       if ($result_code = $transaction->getResultCode()) {
-        drupal_set_message($transaction->getResultMessage(), $result_code > 0 ? 'status' : 'error');
+        $this->messenger()->addMessage(
+          $transaction->getResultMessage(),
+          $result_code > 0 ? MessengerInterface::TYPE_STATUS : MessengerInterface::TYPE_ERROR);
       }
     }
 

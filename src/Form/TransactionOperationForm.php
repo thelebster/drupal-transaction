@@ -136,11 +136,11 @@ class TransactionOperationForm extends EntityForm {
     $t_args = ['%label' => $transaction_operation->label()];
     $logger_args = $t_args + ['link' => $transaction_operation->toLink($this->t('Edit'), 'edit-form')->toString()];
     if ($status == SAVED_UPDATED) {
-      drupal_set_message($this->t('Transaction operation %label has been updated.', $t_args));
+      $this->messenger()->addStatus($this->t('Transaction operation %label has been updated.', $t_args));
       $this->logger('transaction')->notice('Transaction operation %label has been updated.', $logger_args);
     }
     else {
-      drupal_set_message($this->t('Transaction operation %label has been added.', $t_args));
+      $this->messenger()->addStatus($this->t('Transaction operation %label has been added.', $t_args));
       $this->logger('transaction')->notice('Transaction operation %label has been added.', $logger_args);
     }
 

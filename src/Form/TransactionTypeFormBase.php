@@ -212,11 +212,11 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
     ];
     $logger_args = $t_args + ['link' => $transaction_type->toLink($this->t('Edit'), 'edit-form')->toString()];
     if ($status == SAVED_UPDATED) {
-      drupal_set_message($this->t('Transaction type %label has been updated.', $t_args));
+      $this->messenger()->addStatus($this->t('Transaction type %label has been updated.', $t_args));
       $this->logger('transaction')->notice('Transaction type %label has been updated.', $logger_args);
     }
     else {
-      drupal_set_message($this->t('Transaction type %label has been added.', $t_args));
+      $this->messenger()->addStatus($this->t('Transaction type %label has been added.', $t_args));
       $this->logger('transaction')->notice('New transaction type %label with transactor @transactor and target entity type @target has been added.', $logger_args);
     }
 
