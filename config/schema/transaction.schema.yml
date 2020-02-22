@@ -60,6 +60,9 @@ transaction.operation.*:
     label:
       type: label
       label: 'Name'
+    transaction_type:
+      type: string
+      label: 'The transaction type ID'
     description:
       type: text
       label: 'Operation description template'

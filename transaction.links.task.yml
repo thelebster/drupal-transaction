@@ -39,3 +39,13 @@ entity.transaction.delete_form:
 transaction.entities.local_tasks:
   class: \Drupal\Core\Menu\LocalTaskDefault
   deriver: \Drupal\transaction\Plugin\Derivative\TransactionLocalTask
+
+entity.transaction_operation.edit_form:
+  title: 'Edit'
+  route_name: entity.transaction_operation.edit_form
+  base_route: entity.transaction_operation.edit_form
+
+entity.transaction_operation.delete_form:
+  title: 'Delete'
+  route_name: entity.transaction_operation.delete_form
+  base_route: entity.transaction_operation.edit_form

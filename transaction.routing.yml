@@ -63,12 +63,11 @@ entity.transaction_operation.add_form:
         type: entity:transaction_type
 
 entity.transaction_operation.edit_form:
-  path: '/admin/config/workflow/transaction/edit/{transaction_type}/operation/edit/{transaction_operation}'
+  path: '/admin/config/workflow/transaction/operation/{transaction_operation}'
   defaults:
     _entity_form: 'transaction_operation.edit'
     _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
   requirements:
-    _entity_access: 'transaction_type.edit'
     _entity_access: 'transaction_operation.edit'
   options:
     parameters:
@@ -76,12 +75,11 @@ entity.transaction_operation.edit_form:
         type: entity:transaction_type
 
 entity.transaction_operation.delete_form:
-  path: '/admin/config/workflow/transaction/edit/{transaction_type}/operation/delete/{transaction_operation}'
+  path: '/admin/config/workflow/transaction/operation/{transaction_operation}/delete'
   defaults:
     _entity_form: 'transaction_operation.delete'
     _title: 'Delete transaction operation'
   requirements:
-    _entity_access: 'transaction_type.edit'
     _entity_access: 'transaction_operation.delete'
   options:
     parameters:
