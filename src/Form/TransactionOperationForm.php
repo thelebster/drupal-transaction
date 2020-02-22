@@ -88,6 +88,13 @@ class TransactionOperationForm extends EntityForm {
         ],
       ];
     }
+    else {
+      $form['token_help'] = [
+        '#type' => 'markup',
+        '#markup' => $this->t('Enable the <a href=":url">Token module</a> to view the available token browser.', [':url' => 'https://www.drupal.org/project/token']),
+        '#weight' => 20,
+      ];
+    }
 
     return $form;
   }
