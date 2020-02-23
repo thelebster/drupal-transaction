@@ -6,7 +6,6 @@ use Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Render\Markup;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
@@ -74,7 +73,7 @@ class TransactionListBuilder extends EntityListBuilder {
       // This list builder can be targeted by multiple routes. When some
       // argument are not present in the request, we try to get from the route
       // options.
-      /** @see \Drupal\transaction\Routing\RouteSubscriber */
+      /* @see \Drupal\transaction\Routing\RouteSubscriber */
       if (!($this->transactionType = $current_request->get('transaction_type'))
         && ($transaction_type_id = $current_route->getOption('_transaction_transaction_type_id'))) {
         $this->transactionType = $entity_type_manager->getStorage('transaction_type')->load($transaction_type_id);
@@ -192,7 +191,7 @@ class TransactionListBuilder extends EntityListBuilder {
         'date' => [
           '#type' => 'container',
           '#markup' => $this->dateFormatter->format($entity->getCreatedTime(), 'short'),
-        ]
+        ],
       ],
     ];
 
@@ -205,22 +204,22 @@ class TransactionListBuilder extends EntityListBuilder {
         ],
       ]
       : [
-          'data' => [
-            '#type' => 'container',
-            'executor' => [
-              '#theme' => 'username',
-              '#account' => $entity->getExecutor(),
-            ],
-            'date' => [
-              '#type' => 'container',
-              '#markup' => $this->dateFormatter->format($entity->getExecutionTime(), 'short'),
-            ],
-            'result' => [
-              '#type' => 'container',
-              '#markup' => $entity->getResultMessage(),
-            ],
+        'data' => [
+          '#type' => 'container',
+          'executor' => [
+            '#theme' => 'username',
+            '#account' => $entity->getExecutor(),
           ],
-        ];
+          'date' => [
+            '#type' => 'container',
+            '#markup' => $this->dateFormatter->format($entity->getExecutionTime(), 'short'),
+          ],
+          'result' => [
+            '#type' => 'container',
+            '#markup' => $entity->getResultMessage(),
+          ],
+        ],
+      ];
 
     // Extra field values.
     $plugin_settings = $this->transactionType ? $this->transactionType->getPluginSettings() : [];
@@ -262,11 +261,11 @@ class TransactionListBuilder extends EntityListBuilder {
     $operations = parent::getDefaultOperations($entity);
     // Add the execute operation.
     if ($entity->access('execute') && $entity->hasLinkTemplate('execute-form')) {
-      $operations['execute'] = array(
+      $operations['execute'] = [
         'title' => $this->t('Execute'),
         'weight' => 20,
         'url' => $entity->toUrl('execute-form'),
-      );
+      ];
     }
 
     return $operations;

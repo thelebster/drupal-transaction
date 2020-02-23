@@ -3,13 +3,10 @@
 namespace Drupal\transaction\Plugin\RulesAction;
 
 use Drupal\Component\Plugin\Derivative\DeriverBase;
-use Drupal\Core\Entity\ContentEntityTypeInterface;
-use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\Discovery\ContainerDeriverInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
-use Drupal\Core\TypedData\DataReferenceDefinitionInterface;
 use Drupal\rules\Context\ContextDefinition;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\transaction\TransactorPluginManagerInterface;
@@ -44,7 +41,7 @@ class TransactionCreateDeriver extends DeriverBase implements ContainerDeriverIn
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\transaction\TransactorPluginManager $transactor_manager
+   * @param \Drupal\transaction\TransactorPluginManagerInterface $transactor_manager
    *   The transactor plugin manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.

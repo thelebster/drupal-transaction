@@ -72,7 +72,7 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
     $this->configuration += $this->defaultConfiguration();
     $this->fieldManager = $field_manager;
     $this->currentUser = $current_user;
-    $this->fieldPrefix = $config_factory->get('field_ui.settings')->get('field_prefix') ? : 'field_';
+    $this->fieldPrefix = $config_factory->get('field_ui.settings')->get('field_prefix') ?: 'field_';
   }
 
   /**
@@ -289,7 +289,7 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
     if (!empty($bundles)) {
       // Params adjustment.
       if (is_string($bundles)) {
-       $bundles = [$bundles];
+        $bundles = [$bundles];
       }
 
       $fields_by_type = $this->fieldManager->getFieldMapByFieldType($field_type);
@@ -432,10 +432,10 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    *   Field name to check.
    * @param array $form_element
    *   Form element array.
-   * @param FormStateInterface $form_state
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    *
-   * @return boolean
+   * @return bool
    *   TRUE if a field with the given name exists in the target entity type.
    */
   public static function fieldExists($field_name, array $form_element, FormStateInterface $form_state) {
@@ -449,7 +449,7 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
     }
 
     if ($field_info = $form_state->getTemporaryValue('field_info_' . $transactor_field_name)) {
-      $field_prefix = \Drupal::service('config.factory')->get('field_ui.settings')->get('field_prefix') ? : 'field_';
+      $field_prefix = \Drupal::service('config.factory')->get('field_ui.settings')->get('field_prefix') ?: 'field_';
       return FieldStorageConfig::loadByName($field_info['entity_type'], $field_prefix . $field_name) !== NULL;
     }
 
@@ -627,10 +627,10 @@ abstract class TransactorBase extends PluginBase implements TransactorPluginInte
    * @param array $options
    *   (optional) Display options.
    *
-   * @return NULL|\Drupal\Core\Entity\Display\EntityDisplayInterface
+   * @return null|\Drupal\Core\Entity\Display\EntityDisplayInterface
    *   The display config object. NULL on unrecognized display type or mode.
    */
-  protected function setFieldDisplay($field_name, array $field_info, $bundle, $type = 'view', $mode = 'default', $options = []) {
+  protected function setFieldDisplay($field_name, array $field_info, $bundle, $type = 'view', $mode = 'default', array $options = []) {
     $display_id = $field_info['entity_type'] . '.' . $bundle . '.' . $mode;
     $display_values = [
       'targetEntityType' => $field_info['entity_type'],

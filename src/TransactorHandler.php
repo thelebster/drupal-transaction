@@ -147,7 +147,7 @@ class TransactorHandler implements TransactorHandlerInterface {
         && $this->currentUser->id()) {
         $executor = User::load($this->currentUser->id());
       }
-      $transaction->setExecutor($executor ? : User::getAnonymousUser());
+      $transaction->setExecutor($executor ?: User::getAnonymousUser());
 
       // Launch the transaction execution event.
       $this->eventDispatcher->dispatch(TransactionExecutionEvent::EVENT_NAME, new TransactionExecutionEvent($transaction));
@@ -180,11 +180,11 @@ class TransactorHandler implements TransactorHandlerInterface {
    * @param \Drupal\transaction\TransactionInterface $transaction
    *   The transaction to lock.
    *
-   * @return string|FALSE
+   * @return string|false
    *   The lock name if the transaction where successfully locked for execution,
    *   FALSE if the transaction is locked and the locking timeout was exceeded.
    */
-  protected function executionLockAcquire($transaction) {
+  protected function executionLockAcquire(TransactionInterface $transaction) {
     $lock_name = 'transaction_'
       . $transaction->getTypeId() . '_'
       . $transaction->getTargetEntityId();
@@ -325,13 +325,13 @@ class TransactorHandler implements TransactorHandlerInterface {
         $context = 'term';
         break;
 
-      case 'taxonomy_vocabulary' :
+      case 'taxonomy_vocabulary':
         // Taxonomy vocabulary token type doesn't match the entity type's
         // machine name.
         $context = 'vocabulary';
         break;
 
-      default :
+      default:
         $context = $entity_type_id;
         break;
     }

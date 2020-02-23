@@ -20,7 +20,7 @@ class TransactionLocalAction extends DeriverBase implements ContainerDeriverInte
   use StringTranslationTrait;
 
   /**
-   * The entity manager
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
@@ -37,7 +37,7 @@ class TransactionLocalAction extends DeriverBase implements ContainerDeriverInte
    * Creates an TransactionLocalTask object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity manager.
+   *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
@@ -66,7 +66,7 @@ class TransactionLocalAction extends DeriverBase implements ContainerDeriverInte
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
 
-    $tabs = $this->configFactory->get('transaction.settings')->get('tabs') ? : [];
+    $tabs = $this->configFactory->get('transaction.settings')->get('tabs') ?: [];
     foreach ($tabs as $tab) {
       list($transaction_type_id, $target_entity_type_id) = explode('-', $tab);
       $this->derivatives["transaction.$target_entity_type_id.$transaction_type_id.add_transaction_action"] = [

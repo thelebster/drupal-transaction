@@ -104,7 +104,7 @@ class TransactionOperationForm extends EntityForm {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = t('Save transaction operation');
+    $actions['submit']['#value'] = $this->t('Save transaction operation');
     return $actions;
   }
 

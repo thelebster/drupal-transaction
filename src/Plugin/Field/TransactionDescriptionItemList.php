@@ -38,7 +38,6 @@ class TransactionDescriptionItemList extends FieldItemList {
    */
   public function setValue($values, $notify = TRUE) {
     // This is a calculated read-only field.
-    return;
   }
 
   /**

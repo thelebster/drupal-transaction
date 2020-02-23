@@ -37,8 +37,8 @@ class TransactionTypeCreationForm extends FormBase {
   /**
    * Constructs a new transaction type creation form.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
-   *   The entity manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\transaction\TransactorPluginManager $transactor_manager
    *   The transactor plugin manager.
    */
@@ -103,7 +103,7 @@ class TransactionTypeCreationForm extends FormBase {
 
     $form['actions']['submit'] = [
       '#type' => 'submit',
-      '#value' => t('Continue'),
+      '#value' => $this->t('Continue'),
     ];
 
     return $form;
@@ -130,7 +130,7 @@ class TransactionTypeCreationForm extends FormBase {
         && !in_array($target_entity_type_id = $form_state->getValue('target_entity_type'), $transactor_info['supported_entity_types'])) {
         $form_state->setErrorByName('target_entity_type', $this->t('The %type entity type is not supported by the @transactor transactor.', [
           '%type' => $target_entity_type_id ? $this->entityTypeManager->getDefinition($target_entity_type_id)->getLabel() : $this->t('Undefined'),
-          '@transactor' => $transactor_info['title']
+          '@transactor' => $transactor_info['title'],
         ]));
       }
     }

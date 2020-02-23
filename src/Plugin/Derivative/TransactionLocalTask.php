@@ -20,7 +20,7 @@ class TransactionLocalTask extends DeriverBase implements ContainerDeriverInterf
   use StringTranslationTrait;
 
   /**
-   * The entity manager
+   * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
@@ -37,7 +37,7 @@ class TransactionLocalTask extends DeriverBase implements ContainerDeriverInterf
    * Creates an TransactionLocalTask object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity manager.
+   *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
@@ -66,11 +66,11 @@ class TransactionLocalTask extends DeriverBase implements ContainerDeriverInterf
   public function getDerivativeDefinitions($base_plugin_definition) {
     $this->derivatives = [];
 
-    $tabs = $this->configFactory->get('transaction.settings')->get('tabs') ? : [];
+    $tabs = $this->configFactory->get('transaction.settings')->get('tabs') ?: [];
     foreach ($tabs as $tab) {
       list($transaction_type_id, $target_entity_type_id) = explode('-', $tab);
       if (($target_entity_type = $this->entityTypeManager->getDefinition($target_entity_type_id))
-        && ($transaction_collection_path = $target_entity_type->hasLinkTemplate("transaction-$transaction_type_id"))) {
+        && $target_entity_type->hasLinkTemplate("transaction-$transaction_type_id")) {
         $this->derivatives["$target_entity_type_id.$transaction_type_id.transaction_tab"] = [
           'route_name' => "entity.$target_entity_type_id.$transaction_type_id-transaction",
           'title' => $this->entityTypeManager->getStorage('transaction_type')->load($transaction_type_id)->label(),

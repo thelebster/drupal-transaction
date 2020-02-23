@@ -346,7 +346,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    * {@inheritdoc}
    */
   public function getResultCode() {
-    return $this->get('result_code')->value ? : FALSE;
+    return $this->get('result_code')->value ?: FALSE;
   }
 
   /**

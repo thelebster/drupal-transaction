@@ -5,10 +5,8 @@ namespace Drupal\transaction;
 use Drupal\Component\Utility\Unicode;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Routing\CurrentRouteMatch;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Url;
 
@@ -107,14 +105,14 @@ class TransactionOperationListBuilder extends ConfigEntityListBuilder {
     ];
     $row['description'] = [
       'data' => !empty($description = $entity->getDescription())
-        ? Unicode::truncate($description, 80, TRUE, TRUE)
-        : $this->notAvailableValue(),
-      ];
+      ? Unicode::truncate($description, 80, TRUE, TRUE)
+      : $this->notAvailableValue(),
+    ];
     $row['details'] = [
       'data' => !empty($details = $entity->getDetails())
-        ? $this->formatPlural(count($details), '@count line', '@count lines')
-        : $this->notAvailableValue(),
-      ];
+      ? $this->formatPlural(count($details), '@count line', '@count lines')
+      : $this->notAvailableValue(),
+    ];
 
     return $row + parent::buildRow($entity);
   }
@@ -137,7 +135,7 @@ class TransactionOperationListBuilder extends ConfigEntityListBuilder {
    */
   public function render() {
     $build = parent::render();
-    $build['table' ]['#empty'] = $this->t('No transaction operations available. <a href=":link">Add a transaction operation</a>.', [
+    $build['table']['#empty'] = $this->t('No transaction operations available. <a href=":link">Add a transaction operation</a>.', [
       ':link' => Url::fromRoute('entity.transaction_operation.add_form', ['transaction_type' => $this->transactionTypeId])->toString(),
     ]);
 

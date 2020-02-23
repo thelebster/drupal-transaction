@@ -15,7 +15,7 @@ interface TransactionServiceInterface {
    * @param string|\Drupal\transaction\TransactionTypeInterface $transaction_type
    *   The transaction type object or ID.
    *
-   * @return NULL|\Drupal\transaction\TransactionInterface
+   * @return null|\Drupal\transaction\TransactionInterface
    *   The last executed transaction, NULL if not found.
    *
    * @throws \InvalidArgumentException

@@ -14,7 +14,7 @@ class TransactionTypeAddForm extends TransactionTypeFormBase {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = t('Create transaction type');
+    $actions['submit']['#value'] = $this->t('Create transaction type');
     return $actions;
   }
 

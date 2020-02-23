@@ -24,11 +24,10 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurableInt
   const RESULT_ERROR = -1;
 
   /**
-   * Executes a transacion.
+   * Executes a transaction.
    *
    * By calling this method, the transactor will set the result code in the
    * transaction.
-   * @see \Drupal\transaction\TransactionInterface::getResultCode()
    *
    * @param \Drupal\transaction\TransactionInterface $transaction
    *   The transaction to execute.
@@ -38,6 +37,8 @@ interface TransactorPluginInterface extends PluginFormInterface, ConfigurableInt
    *
    * @return bool
    *   TRUE if transaction was executed, FALSE otherwise.
+   *
+   * @see \Drupal\transaction\TransactionInterface::getResultCode()
    */
   public function executeTransaction(TransactionInterface $transaction, TransactionInterface $last_executed = NULL);
 

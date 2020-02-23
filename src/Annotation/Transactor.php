@@ -24,46 +24,46 @@ class Transactor extends Plugin {
   /**
    * The title of the plugin.
    *
-   * @ingroup plugin_translatable
-   *
    * @var \Drupal\Core\Annotation\Translation
+   *
+   * @ingroup plugin_translatable
    */
   public $title;
 
   /**
    * The description of the plugin.
    *
-   * @ingroup plugin_translatable
-   *
    * @var \Drupal\Core\Annotation\Translation
+   *
+   * @ingroup plugin_translatable
    */
   public $description;
 
   /**
    * A list of entity types this transactor supports.
    *
-   * @var string[] (optional)
+   * @var string[]|optional
    */
   public $supported_entity_types = [];
 
   /**
    * Fields in transaction entity.
    *
-   * @var array (optional)
+   * @var array|optional
    */
   public $transaction_fields = [];
 
   /**
    * Fields in the target entity.
    *
-   * @var array (optional)
+   * @var array|optional
    */
   public $target_fields = [];
 
   /**
    * The default settings for the transactor.
    *
-   * @var array (optional)
+   * @var array|optional
    */
   public $settings = [];
 

@@ -3,10 +3,6 @@
 namespace Drupal\transaction;
 
 use Drupal\Component\Plugin\PluginManagerInterface;
-use Drupal\Core\Cache\CacheBackendInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\transaction\Annotation\Transactor;
 
 /**
  * Plugin manager interface.

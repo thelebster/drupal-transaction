@@ -47,7 +47,7 @@ interface TransactionTypeInterface extends ConfigEntityInterface {
    * @return \Drupal\transaction\TransactionTypeInterface
    *   The called transaction type.
    *
-   * @deprecated Target entity type should be set only in constructor.
+   * @deprecated in transaction:8.x-1.0 and is removed from transaction:8.x-2.0. Target entity type should be set only in constructor.
    */
   public function setTargetEntityTypeId($entity_type_id);
 
@@ -117,7 +117,7 @@ interface TransactionTypeInterface extends ConfigEntityInterface {
    *
    * @param string $name
    *   The option to retrieve.
-   * @param $default_value
+   * @param mixed $default_value
    *   Default value to return if no such option or it is empty.
    *
    * @return mixed
@@ -136,9 +136,9 @@ interface TransactionTypeInterface extends ConfigEntityInterface {
   /**
    * Sets a transaction type option.
    *
-   * @param $name
+   * @param string $name
    *   The option to set.
-   * @param $value
+   * @param mixed $value
    *   The new value.
    *
    * @return \Drupal\transaction\TransactionTypeInterface

@@ -3,7 +3,6 @@
 namespace Drupal\transaction\Plugin\Transaction;
 
 use Drupal\transaction\TransactionInterface;
-use Drupal\transaction\TransactorPluginInterface;
 
 /**
  * Transactor for accounting type transactions.
@@ -67,8 +66,8 @@ class BalanceTransactor extends GenericTransactor {
 
     $settings = $transaction->getType()->getPluginSettings();
 
-    // Current balance from the last executed transaction. The current transaction
-    // balance will take as the initial balance.
+    // Current balance from the last executed transaction. The current
+    // transaction balance will take as the initial balance.
     $balance = $last_executed ? $last_executed->get($settings['balance'])->value : $transaction->get($settings['balance'])->value;
     // Transaction amount.
     $amount = $transaction->get($settings['amount'])->value;

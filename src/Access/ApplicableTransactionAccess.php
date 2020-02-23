@@ -52,7 +52,7 @@ class ApplicableTransactionAccess implements AccessInterface {
    *   The involved content entity.
    * @param \Drupal\transaction\TransactionTypeInterface $transaction_type
    *   The transaction type.
-   * @param \Symfony\Component\Routing\Route
+   * @param \Symfony\Component\Routing\Route $route
    *   The route to check access for.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request.

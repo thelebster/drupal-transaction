@@ -38,6 +38,7 @@ class TransactionExecutionEvent extends Event {
    * Gets the executed transaction.
    *
    * @return \Drupal\transaction\TransactionInterface
+   *   The executed transaction.
    */
   public function getTransaction() {
     return $this->transaction;

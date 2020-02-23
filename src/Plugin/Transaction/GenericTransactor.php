@@ -3,9 +3,7 @@
 namespace Drupal\transaction\Plugin\Transaction;
 
 use Drupal\transaction\TransactorBase;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\transaction\TransactionInterface;
-use Drupal\transaction\TransactorPluginInterface;
 
 /**
  * Provides a generic transactor.

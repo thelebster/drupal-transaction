@@ -24,24 +24,23 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   /**
    * Generic result code for successful execution.
    *
-   * @deprecated as of 1.0-alpha3, will be removed in 1.0-beta1. Instead, use
-   *   consts defined in \Drupal\transaction\TransactorPluginInterface and
-   *   derived transactors.
+   * @deprecated in transaction:8.x-1.0-alpha3 and is removed from
+   *   transaction:8.x-1.0-beta1. Use instead defined const in
+   *   \Drupal\transaction\TransactorPluginInterface and derived transactors.
    */
   const RESULT_OK = 1;
 
   /**
    * Generic result code for failed execution.
    *
-   * @deprecated as of 1.0-alpha3, will be removed in 1.0-beta1. Instead, use
-   *   consts defined in \Drupal\transaction\TransactorPluginInterface and
-   *   derived transactors.
+   * @deprecated in transaction:8.x-1.0-alpha3 and is removed from
+   *   transaction:8.x-1.0-beta1. Use instead defined const in
+   *   \Drupal\transaction\TransactorPluginInterface and derived transactors.
    */
   const RESULT_ERROR = -1;
 
   /**
-   * Property name, when set indicates that the target entity was updated by
-   * the transactor on transaction execution.
+   * Name of property indicating that the target entity was updated.
    *
    * @var string
    */
@@ -224,7 +223,6 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    * Executes the transaction.
    *
    * The execution result code will be set or changed.
-   * @see \Drupal\transaction\TransactionInterface::getResultCode()
    *
    * @param bool $save
    *   (optional) Save the transaction after succeeded execution.
@@ -237,6 +235,8 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    *
    * @throws \Drupal\transaction\InvalidTransactionStateException
    *   If the transaction is already executed.
+   *
+   * @see \Drupal\transaction\TransactionInterface::getResultCode()
    */
   public function execute($save = TRUE, UserInterface $executor = NULL);
 
@@ -244,14 +244,14 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
    * Gets the execution result code.
    *
    * Positive integer means that the execution was successful:
-   *  - 1: generic code for successful execution
-   *    @see \Drupal\transaction\TransactorPluginInterface::RESULT_OK
-   *  - > 1: transactor specific successful execution result code
+   *  - 1: generic code for successful execution, @see
+   *       \Drupal\transaction\TransactorPluginInterface::RESULT_OK
+   *  - > 1: transactor specific successful execution result code.
    *
    * Negative integer means that there were errors trying to execute the
    * transaction:
-   *  - -1: generic code for failed execution
-   *    @see \Drupal\transaction\TransactorPluginInterface::RESULT_ERROR
+   *  - -1: generic code for failed execution, @see
+   *        \Drupal\transaction\TransactorPluginInterface::RESULT_ERROR
    *  - < -1: transactor specific failed execution result code
    *
    * Errors can be recoverable or fatal. If transaction is still pending
@@ -267,14 +267,13 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   /**
    * Sets the execution result code.
    *
-   * @see \Drupal\transaction\TransactionInterface::getResultCode() for
-   * information about result codes.
-   *
-   * @param int
+   * @param int $code
    *   The result code.
    *
    * @return \Drupal\transaction\TransactionInterface
    *   The called transaction.
+   *
+   * @see \Drupal\transaction\TransactionInterface::getResultCode()
    */
   public function setResultCode($code);
 

@@ -136,15 +136,11 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
       '#options' => [
         TransactionTypeInterface::EXECUTION_STANDARD => $this->t('Leave as pending'),
         TransactionTypeInterface::EXECUTION_IMMEDIATE => $this->t('Immediate execution'),
-        // @todo Scheduled execution to be added
-        //TransactionTypeInterface::EXECUTION_SCHEDULED => $this->t('Scheduled execution'),
         TransactionTypeInterface::EXECUTION_ASK => $this->t('Ask user'),
       ],
     ];
     $form['options']['execution'][TransactionTypeInterface::EXECUTION_STANDARD]['#description'] = $this->t('The new transaction can be executed only after its creation.');
     $form['options']['execution'][TransactionTypeInterface::EXECUTION_IMMEDIATE]['#description'] = $this->t('The transaction will be executed automatically right after its creation.');
-    // @todo Scheduled execution to be added
-    //$form['options']['execution'][TransactionTypeInterface::EXECUTION_SCHEDULED]['#description'] = $this->t('It will be mandatory to set a scheduled execution date and time when creating the transaction.');
     $form['options']['execution'][TransactionTypeInterface::EXECUTION_ASK]['#description'] = $this->t('Let the user choose how the new transaction will be executed in the transaction form.');
 
     // Transaction list local task in the target entity.
@@ -166,7 +162,7 @@ abstract class TransactionTypeFormBase extends BundleEntityFormBase {
    */
   protected function actions(array $form, FormStateInterface $form_state) {
     $actions = parent::actions($form, $form_state);
-    $actions['submit']['#value'] = t('Save transaction type');
+    $actions['submit']['#value'] = $this->t('Save transaction type');
     return $actions;
   }
 

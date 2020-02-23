@@ -74,7 +74,7 @@ class RouteSubscriber extends RouteSubscriberBase {
         $route->setOptions($route_options);
         $route_requirements = $route->getRequirements();
         $route_requirements['_entity_access'] = $target_entity_type_id . '.view';
-        $route_requirements[$target_entity_type_id] =  '\d+';
+        $route_requirements[$target_entity_type_id] = '\d+';
         unset($route_requirements['target_entity']);
         $route->setRequirements($route_requirements);
 

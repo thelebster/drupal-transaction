@@ -6,8 +6,6 @@ use Drupal\Core\Entity\EntityAccessControlHandler;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Access\AccessResult;
-use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
  * Access controller for the transaction entity.
@@ -70,22 +68,5 @@ class TransactionAccessControlHandler extends EntityAccessControlHandler {
   protected function checkCreateAccess(AccountInterface $account, array $context, $entity_bundle = NULL) {
     return AccessResult::allowedIfHasPermission($account, "create $entity_bundle transaction");
   }
-
-  /**
-   * {@inheritdoc}
-   */
-//   protected function checkFieldAccess($operation, FieldDefinitionInterface $field_definition, AccountInterface $account, FieldItemListInterface $items = NULL) {
-    // @todo target_entity cannot be edited
-//     if ($operation == 'edit') {
-//       // Only users with the administer nodes permission can edit administrative
-//       // fields.
-//       $administrative_fields = ['uid', 'created', 'status'];
-//       if (in_array($field_definition->getName(), $administrative_fields, TRUE)) {
-//         return AccessResult::allowedIfHasPermission($account, 'administer mailing list subscriptions');
-//       }
-//     }
-
-//     return parent::checkFieldAccess($operation, $field_definition, $account, $items);
-//   }
 
 }

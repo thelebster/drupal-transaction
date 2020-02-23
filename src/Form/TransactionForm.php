@@ -7,7 +7,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\transaction\TransactionTypeInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
-use Drupal\transaction\TransactionInterface;
 
 /**
  * Form controller for the transaction entity.

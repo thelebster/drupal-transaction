@@ -72,8 +72,6 @@ class TransactionTypeStorage extends ConfigEntityStorage {
    *   The entity field manager.
    * @param \Drupal\Core\Routing\RouteBuilderInterface $route_builder
    *   The route builder.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
    *   The cache tags invalidator.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_discovery
@@ -135,7 +133,7 @@ class TransactionTypeStorage extends ConfigEntityStorage {
 
   /**
    * Update the settings local task.
-   * 
+   *
    * @param \Drupal\transaction\TransactionTypeInterface $transaction_type
    *   The transaction type.
    * @param bool $has_tab

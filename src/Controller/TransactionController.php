@@ -45,7 +45,7 @@ class TransactionController extends ControllerBase {
    *
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
-   * @param \Drupal\Core\Routing\RouteMatchInterface
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The current route match.
    * @param \Drupal\transaction\TransactionTypeInterface $transaction_type
    *   (optional) The type of the transactions in the collection.
@@ -86,6 +86,8 @@ class TransactionController extends ControllerBase {
   /**
    * Provides a title callback for transaction creation form.
    *
+   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   *   The current route match.
    * @param \Drupal\transaction\TransactionTypeInterface $transaction_type
    *   (optional) The type of the new transaction.
    * @param \Drupal\Core\Entity\ContentEntityInterface $target_entity

@@ -28,7 +28,7 @@ class TransactionInlineEntityFormNewTransaction extends InlineEntityFormSimple {
     $items->get($delta)->setValue(NULL);
     return parent::formElement($items, $delta, $element, $form, $form_state);
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -38,4 +38,3 @@ class TransactionInlineEntityFormNewTransaction extends InlineEntityFormSimple {
   }
 
 }
-  

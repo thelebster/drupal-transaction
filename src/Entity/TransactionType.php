@@ -279,7 +279,8 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
       'status' => TRUE,
     ]);
 
-    // Hide labels for all components in list view mode, table header used instead.
+    // Hide labels for all components in list view mode, table header used
+    // instead.
     foreach ($list_display_mode->getComponents() as $name => $component) {
       if (isset($component['label']) && $component['label'] != 'hidden') {
         $component['label'] = 'hidden';
@@ -322,7 +323,7 @@ class TransactionType extends ConfigEntityBundleBase implements TransactionTypeI
       // Sanitize values for bundles.
       $clean_value = [];
       if (is_array($value)) {
-        foreach ($value as $key => $item) {
+        foreach ($value as $item) {
           if (!empty($item) && is_string($item)) {
             $clean_value[] = $item;
           }

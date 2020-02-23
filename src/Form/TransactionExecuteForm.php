@@ -26,7 +26,7 @@ class TransactionExecuteForm extends ContentEntityConfirmFormBase {
     /** @var \Drupal\transaction\TransactionTypeInterface $transaction_type */
     $transaction_type = $transaction->get('type')->entity;
 
-    return $transaction_type->getPlugin()->getExecutionIndications($transaction) ? : parent::getDescription();
+    return $transaction_type->getPlugin()->getExecutionIndications($transaction) ?: parent::getDescription();
   }
 
   /**
