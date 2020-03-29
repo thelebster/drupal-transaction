@@ -8,3 +8,4 @@ dependencies:
  - dynamic_entity_reference:dynamic_entity_reference
 test_dependencies:
   - drupal:field_ui
+  - token:token

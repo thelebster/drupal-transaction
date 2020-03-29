@@ -5,7 +5,7 @@ namespace Drupal\Tests\transaction\Functional;
 use Drupal\Tests\BrowserTestBase;
 
 /**
- * Base class for functional tests for the fixed block content.
+ * Base class for functional tests of the Transaction module.
  */
 abstract class FunctionalTransactionTestBase extends BrowserTestBase {
 
