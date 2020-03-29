@@ -15,6 +15,6 @@ services:
 
   transaction.applicable_transaction_access:
     class: Drupal\transaction\Access\ApplicableTransactionAccess
-    arguments: ['@current_route_match', '@request_stack']
+    arguments: ['@current_route_match', '@request_stack', '@entity_type.manager']
     tags:
       - { name: access_check, applies_to: _applicable_transaction_type }
