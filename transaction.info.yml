@@ -7,6 +7,4 @@ core: 8.x
 dependencies:
  - dynamic_entity_reference:dynamic_entity_reference
 test_dependencies:
-  # @todo Remove once https://www.drupal.org/project/transaction/issues/3118352 is solved
-  - drupal:options
   - drupal:field_ui

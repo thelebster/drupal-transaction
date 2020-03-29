@@ -170,7 +170,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ->setComputed(TRUE)
       ->setClass('\Drupal\transaction\Plugin\Field\TransactionResultMessageItemList')
       ->setDisplayOptions('view', [
-        'type' => 'list_default',
+        'type' => 'string',
         'weight' => 0,
       ])
       ->setDisplayConfigurable('view', TRUE);
@@ -200,7 +200,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ->setComputed(TRUE)
       ->setClass('\Drupal\transaction\Plugin\Field\TransactionDescriptionItemList')
       ->setDisplayOptions('view', [
-        'type' => 'list_default',
+        'type' => 'string',
         'weight' => 0,
       ])
       ->setDisplayConfigurable('view', TRUE);
@@ -213,7 +213,7 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ->setClass('\Drupal\transaction\Plugin\Field\TransactionDetailsItemList')
       ->setCardinality(FieldStorageDefinitionInterface::CARDINALITY_UNLIMITED)
       ->setDisplayOptions('view', [
-        'type' => 'list_default',
+        'type' => 'string',
         'weight' => 0,
       ])
       ->setDisplayConfigurable('view', TRUE);

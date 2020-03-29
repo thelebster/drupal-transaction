@@ -24,8 +24,6 @@ abstract class FunctionalTransactionTestBase extends BrowserTestBase {
   protected static $modules = [
     'field',
     'field_ui',
-    // @todo Remove once https://www.drupal.org/project/transaction/issues/3118352 is solved
-    'options',
     'block',
     'filter',
     'text',
