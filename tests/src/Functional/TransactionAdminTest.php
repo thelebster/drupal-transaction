@@ -28,8 +28,6 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
     // Create and log in an administrative user.
     $this->adminUser = $this->drupalCreateUser([
       'administer transaction types',
-      // @todo Remove the 'administer transactions' permission once https://www.drupal.org/project/transaction/issues/3118406 is fixed
-      'administer transactions',
       'administer entity_test fields',
       'administer transaction fields',
       'access administration pages',

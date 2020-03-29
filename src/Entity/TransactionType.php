@@ -30,7 +30,6 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *       "delete" = "Drupal\transaction\Form\TransactionTypeDeleteForm",
  *     },
  *   },
- *   admin_permission = "administer transactions",
  *   config_prefix = "type",
  *   bundle_of = "transaction",
  *   entity_keys = {
