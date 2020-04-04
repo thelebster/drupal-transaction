@@ -2,6 +2,7 @@
 
 namespace Drupal\transaction;
 
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -66,6 +67,8 @@ class TransactionTypeStorage extends ConfigEntityStorage {
    *   The UUID service.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface|null $memory_cache
+   *   The memory cache backend.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager
@@ -77,8 +80,8 @@ class TransactionTypeStorage extends ConfigEntityStorage {
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_discovery
    *   The cache discovery.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, LanguageManagerInterface $language_manager, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $field_manager, RouteBuilderInterface $route_builder, CacheTagsInvalidatorInterface $cache_tags_invalidator, CacheBackendInterface $cache_discovery) {
-    parent::__construct($entity_type, $config_factory, $uuid_service, $language_manager);
+  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache = NULL, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $field_manager, RouteBuilderInterface $route_builder, CacheTagsInvalidatorInterface $cache_tags_invalidator, CacheBackendInterface $cache_discovery) {
+    parent::__construct($entity_type, $config_factory, $uuid_service, $language_manager, $memory_cache);
     $this->entityTypeManager = $entity_type_manager;
     $this->fieldManager = $field_manager;
     $this->routeBuilder = $route_builder;
@@ -95,6 +98,7 @@ class TransactionTypeStorage extends ConfigEntityStorage {
       $container->get('config.factory'),
       $container->get('uuid'),
       $container->get('language_manager'),
+      $container->get('entity.memory_cache'),
       $container->get('entity_type.manager'),
       $container->get('entity_field.manager'),
       $container->get('router.builder'),

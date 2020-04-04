@@ -3,6 +3,7 @@ type: module
 description: 'Integration between transaction and inline entity form modules. Provides a widget to create new transactions from the target entity form.'
 package: Workflow
 core: 8.x
+core_version_requirement: ^8 || ^9
 dependencies:
- - transaction:transaction
- - inline_entity_form:inline_entity_form
+  - transaction:transaction
+  - inline_entity_form:inline_entity_form
