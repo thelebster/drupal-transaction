@@ -2,9 +2,6 @@
 
 namespace Drupal\Tests\transaction\Kernel;
 
-use Drupal\field\Entity\FieldConfig;
-use Drupal\transaction\Entity\Transaction;
-use Drupal\transaction\Entity\TransactionOperation;
 use Drupal\transaction\Entity\TransactionType;
 use Drupal\user\Entity\User;
 
@@ -16,93 +13,31 @@ use Drupal\user\Entity\User;
 class GenericTransactionTest extends KernelTransactionTestBase {
 
   /**
-   * A generic transaction to work with.
-   *
-   * @var \Drupal\transaction\TransactionInterface
-   */
-  protected $transaction;
-
-  /**
-   * A log message.
-   *
-   * @var string
-   */
-  protected $logMessage = 'Log message';
-
-  /**
-   * A transaction operation.
-   *
-   * @var \Drupal\transaction\TransactionOperationInterface
-   */
-  protected $transactionOperation;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setUp() {
-    parent::setUp();
-
-    $this->prepareGenericTransactionType();
-    $this->prepareGenericTransactionOperation();
-    $this->prepareGenericTransaction();
-  }
-
-  /**
    * Creates a generic transaction type.
    */
-  protected function prepareGenericTransactionType() {
-    TransactionType::create([
+  protected function prepareTransactionType() {
+    $this->transactionType = TransactionType::create([
       'id' => 'test_generic',
       'label' => 'Test generic',
       'target_entity_type' => 'entity_test',
       'transactor' => [
         'id' => 'transaction_generic',
         'settings' => [
-          'last_transaction' => 'test_last_transaction',
-          'log_message' => 'test_log_message',
+          'last_transaction' => 'field_last_transaction',
+          'log_message' => 'field_log_message',
         ],
       ],
-    ])->save();
+    ]);
+    $this->transactionType->save();
 
     // Adds the test log message field.
-    FieldConfig::create([
-      'field_name' => 'test_log_message',
-      'entity_type' => 'transaction',
-      'bundle' => 'test_generic',
-    ])->save();
-  }
-
-  /**
-   * Creates a transaction operation to work with.
-   */
-  protected function prepareGenericTransactionOperation() {
-    $this->transactionOperation = TransactionOperation::create([
-      'id' => 'test_operation',
-      'transaction_type' => 'test_generic',
-      'description' => '[transaction:type] #[transaction:id]',
-      'details' => [
-        'Executed by UID: [transaction:executor:target_id]',
-        'Transaction UUID: [transaction:uuid]',
-      ],
-    ]);
-    $this->transactionOperation->save();
-  }
-
-  /**
-   * Creates a generic transaction to work with.
-   */
-  protected function prepareGenericTransaction() {
-    $this->transaction = Transaction::create([
-      'type' => 'test_generic',
-      'target_entity' => $this->targetEntity,
-      'test_log_message' => $this->logMessage,
-    ]);
+    $this->addTransactionLogMessageField();
   }
 
   /**
    * Tests generic transaction creation.
    */
-  public function testCreateGenericTransaction() {
+  public function testGenericTransactionCreation() {
     $transaction = $this->transaction;
 
     // Checks status for new non-executed transaction.
@@ -121,7 +56,7 @@ class GenericTransactionTest extends KernelTransactionTestBase {
   /**
    * Tests generic transaction execution.
    */
-  public function testExecuteGenericTransaction() {
+  public function testGenericTransactionExecution() {
     $transaction = $this->transaction;
 
     $this->assertTrue($transaction->execute());
@@ -131,10 +66,11 @@ class GenericTransactionTest extends KernelTransactionTestBase {
     $this->assertEquals(User::getAnonymousUser()->id(), $transaction->getExecutorId());
     $this->assertGreaterThan(0, $transaction->getResultCode());
     $this->assertEquals('Transaction executed successfully.', $transaction->getResultMessage());
+    $this->assertEquals($transaction->id(), $this->targetEntity->get('field_last_transaction')->target_id);
   }
 
   /**
-   * Tests generic transaction execution.
+   * Tests generic transaction execution with operation.
    */
   public function testGenericTransactionOperation() {
     $transaction = $this->transaction;
