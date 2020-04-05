@@ -47,6 +47,7 @@ class TransactionService implements TransactionServiceInterface {
       ->condition('target_entity.target_id', $target_entity_id)
       ->exists('executed')
       ->range(0, 1)
+      ->sort('execution_sequence', 'DESC')
       ->sort('executed', 'DESC')
       ->execute();
 

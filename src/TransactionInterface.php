@@ -292,6 +292,28 @@ interface TransactionInterface extends ContentEntityInterface, EntityOwnerInterf
   public function getResultMessage($reset = FALSE);
 
   /**
+   * Gets the transaction execution sequence.
+   *
+   * @return int|null
+   *   The execution sequence number, NULL for non-executed transactions.
+   */
+  public function getExecutionSequence();
+
+  /**
+   * Sets the execution sequence number.
+   *
+   * @param int|null $execution_sequence
+   *   The execution sequence number, NULL to unset the existing value.
+   *
+   * @return \Drupal\transaction\TransactionInterface
+   *   The called transaction.
+   *
+   * @throws \InvalidArgumentException
+   *   When the sequence number is lower than 1.
+   */
+  public function setExecutionSequence($execution_sequence);
+
+  /**
    * Gets the transaction execution timestamp.
    *
    * @return int

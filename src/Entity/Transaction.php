@@ -158,6 +158,18 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
+    // The execution sequence number.
+    $fields['execution_sequence'] = BaseFieldDefinition::create('integer')
+      ->setLabel(t('Execution sequence'))
+      ->setDescription(t('The order number on which this transaction was executed.'))
+      ->setSetting('unsigned', TRUE)
+      ->setReadOnly(TRUE)
+      ->setDisplayOptions('view', [
+        'type' => 'number_integer',
+        'region' => 'hidden',
+      ])
+      ->setDisplayConfigurable('view', TRUE);
+
     // The execution result code.
     $fields['result_code'] = BaseFieldDefinition::create('integer')
       ->setLabel(t('Result code'))
@@ -267,6 +279,25 @@ class Transaction extends ContentEntityBase implements TransactionInterface {
    */
   public function setOwnerId($uid) {
     $this->set('uid', $uid);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getExecutionSequence() {
+    return $this->get('execution_sequence')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setExecutionSequence($execution_sequence) {
+    if ($execution_sequence !== NULL && $execution_sequence < 1) {
+      throw new \InvalidArgumentException('The execution sequence number must be greater than 0.');
+    }
+    $this->set('execution_sequence', $execution_sequence);
+
     return $this;
   }
 

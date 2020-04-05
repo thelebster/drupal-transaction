@@ -88,4 +88,26 @@ class GenericTransactionTest extends KernelTransactionTestBase {
     $this->assertEquals($expected_details, $transaction->getDetails());
   }
 
+  /**
+   * Tests the transaction execution sequence.
+   */
+  public function testTransactionExecutionSequence() {
+    $first_transaction = $this->transaction;
+    // Creates a new transaction.
+    $this->prepareTransaction();
+    $second_transaction = $this->transaction;
+    // Executes both transaction within the same request.
+    $first_transaction->execute();
+    $second_transaction->execute();
+
+    // Checks that both transactions have the same execution time.
+    $this->assertEquals($first_transaction->getExecutionTime(), $second_transaction->getExecutionTime());
+
+    // Checks that the second transaction is the last execution transaction.
+    /** @var \Drupal\transaction\TransactionInterface $last_transaction */
+    $last_transaction = \Drupal::service('transaction')
+      ->getLastExecutedTransaction($this->targetEntity, $this->transactionType);
+    $this->assertEquals($second_transaction->id(), $last_transaction->id());
+  }
+
 }

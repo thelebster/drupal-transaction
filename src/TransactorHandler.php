@@ -140,7 +140,9 @@ class TransactorHandler implements TransactorHandlerInterface {
         $transaction->setResultCode(TransactorPluginInterface::RESULT_OK);
       }
 
+      // Sets the execution time and sequence.
       $transaction->setExecutionTime($this->timeService->getRequestTime());
+      $transaction->setExecutionSequence($last_executed ? $last_executed->getExecutionSequence() + 1 : 1);
 
       if (!$executor
         && $this->currentUser
