@@ -1,3 +1,9 @@
+-- Transaction 8.x-1.0-beta1, 2020-04-05 --
+
+- Tests added, functional admin and kernel per transaction type
+- Compatibility with Drupal 9
+- Bug fixes
+
 -- Transaction 8.x-1.0-alpha4, 2019-01-18 --
 
 - Rules integration, with actions to get the last executed transaction, create
