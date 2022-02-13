@@ -15,7 +15,7 @@ use Drupal\transaction\TransactionInterface;
  *   id = "transaction_execute",
  *   label = @Translation("Execute a transaction"),
  *   category = @Translation("Transaction"),
- *   context = {
+ *   context_definitions = {
  *     "transaction" = @ContextDefinition("entity:transaction",
  *       label = @Translation("Transaction"),
  *       description = @Translation("Specifies the transaction to execute."),
@@ -82,7 +82,7 @@ class TransactionExecute extends RulesActionBase implements ContainerFactoryPlug
     if (isset($selected_data['transaction'])
       && $bundle_constraint = $selected_data['transaction']->getConstraint('Bundle')) {
       $data_type = 'entity:transaction:' . $bundle_constraint[0];
-      $this->pluginDefinition['context']['transaction']->setDataType($data_type);
+      $this->pluginDefinition['context_definitions']['transaction']->setDataType($data_type);
     }
   }
 

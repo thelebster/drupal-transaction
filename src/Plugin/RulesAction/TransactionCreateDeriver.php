@@ -107,7 +107,7 @@ class TransactionCreateDeriver extends DeriverBase implements ContainerDeriverIn
       $this->derivatives[$transactor_id] = [
         'label' => $this->t('Create a new @transactor_type transaction', ['@transactor_type' => $transactor_info['title']]),
         'category' => $this->t('Transaction'),
-        'context' => $contexts,
+        'context_definitions' => $contexts,
         'provides' => [
           'transaction' => ContextDefinition::create('entity:transaction')
             ->setLabel($this->t('Transaction'))

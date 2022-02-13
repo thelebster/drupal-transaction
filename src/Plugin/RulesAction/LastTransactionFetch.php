@@ -15,7 +15,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
  *   id = "transaction_fetch_last_executed",
  *   label = @Translation("Fetch the last executed transaction"),
  *   category = @Translation("Transaction"),
- *   context = {
+ *   context_definitions = {
  *     "target_entity" = @ContextDefinition("entity",
  *       label = @Translation("Target entity"),
  *       description = @Translation("The target entity of the transaction to search for."),
