@@ -2,7 +2,7 @@
   "name": "drupal/transaction",
   "description": "Transactional operations over entities.",
   "type": "drupal-module",
-  "license": "GPL-2.0+",
+  "license": "GPL-2.0-or-later",
   "minimum-stability": "dev",
   "homepage": "https://www.drupal.org/project/transaction",
   "keywords": ["Drupal", "transaction", "accounting"],
@@ -20,7 +20,7 @@
   "support": {
     "issues": "https://www.drupal.org/project/issues/transaction",
     "irc": "irc://irc.freenode.org/drupal-contribute",
-    "source": "http://cgit.drupalcode.org/transaction"
+    "source": "https://git.drupalcode.org/project/transaction"
   },
   "require": {
     "drupal/dynamic_entity_reference": "^1.0"
