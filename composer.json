@@ -23,7 +23,7 @@
     "source": "https://git.drupalcode.org/project/transaction"
   },
   "require": {
-    "drupal/dynamic_entity_reference": "^3.0"
+    "drupal/dynamic_entity_reference": "^3.0 || ^4.0"
   },
   "require-dev": {
     "drupal/token": "^1.6"
