@@ -16,6 +16,7 @@ class TransactionTypeDeleteForm extends EntityConfirmFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $transaction_count = $this->entityTypeManager->getStorage('transaction')->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type', $this->entity->id())
       ->count()
       ->execute();

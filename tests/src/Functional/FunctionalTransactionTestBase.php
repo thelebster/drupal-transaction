@@ -35,7 +35,7 @@ abstract class FunctionalTransactionTestBase extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     // Create a basic bundle on the entity test type.

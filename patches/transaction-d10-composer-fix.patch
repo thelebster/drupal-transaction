@@ -1,0 +1,13 @@
+diff --git a/composer.json b/composer.json
+index cfb00cd..72da21e 100644
+--- a/composer.json
++++ b/composer.json
+@@ -23,7 +23,7 @@
+     "source": "https://git.drupalcode.org/project/transaction"
+   },
+   "require": {
+-    "drupal/dynamic_entity_reference": "^1.0"
++    "drupal/dynamic_entity_reference": "^3.0"
+   },
+   "require-dev": {
+     "drupal/token": "^1.6"

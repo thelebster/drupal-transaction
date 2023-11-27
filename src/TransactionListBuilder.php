@@ -119,6 +119,7 @@ class TransactionListBuilder extends EntityListBuilder {
    */
   protected function getEntityIds() {
     $query = $this->getStorage()->getQuery()
+      ->accessCheck(TRUE)
       ->sort('execution_sequence', 'DESC')
       ->sort('executed', 'DESC')
       ->sort('created', 'DESC');

@@ -22,7 +22,7 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     // Create and log in an administrative user.
@@ -70,7 +70,7 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
     $transactor = 'transaction_generic';
     $target_entity_type = 'entity_test';
     $post = ['target_entity_type' => $target_entity_type, 'transactor' => $transactor];
-    $this->drupalPostForm(NULL, $post, 'Continue');
+    $this->submitForm($post, 'Continue');
 
     $label = 'Generic workflow';
     $id = 'generic_workflow';
@@ -78,15 +78,15 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
       'label' => $label,
       'id' => $id,
     ];
-    $this->drupalPostForm(NULL, $post, 'Create transaction type');
+    $this->submitForm($post, 'Create transaction type');
 
     // Check the created transaction type values.
     /** @var \Drupal\transaction\TransactionTypeInterface $transaction_type */
     $transaction_type = TransactionType::load($id);
     $this->assertNotNull($transaction_type);
-    $this->assertEqual($transaction_type->label(), $label);
-    $this->assertEqual($transaction_type->getTargetEntityTypeId(), $target_entity_type);
-    $this->assertEqual($transaction_type->getPluginId(), $transactor);
+    $this->assertEquals($transaction_type->label(), $label);
+    $this->assertEquals($transaction_type->getTargetEntityTypeId(), $target_entity_type);
+    $this->assertEquals($transaction_type->getPluginId(), $transactor);
 
     /** @var \Drupal\transaction\TransactorPluginInterface $transactor_plugin */
     $transactor_plugin = $transaction_type->getPlugin();
@@ -107,7 +107,8 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
       'last_transaction_label' => 'Last transaction',
       'last_transaction_field_name' => 'last_transaction',
     ];
-    $this->drupalPostForm('admin/config/workflow/transaction/edit/generic_workflow', $post, 'Save transaction type');
+    $this->drupalGet('admin/config/workflow/transaction/edit/generic_workflow');
+    $this->submitForm($post, 'Save transaction type');
 
     // Check the log message field was created on the transaction type.
     /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
@@ -128,7 +129,8 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
       // Execution control: ask user.
       'execution' => '3',
     ];
-    $this->drupalPostForm('admin/config/workflow/transaction/edit/generic_workflow', $post, 'Save transaction type');
+    $this->drupalGet('admin/config/workflow/transaction/edit/generic_workflow');
+    $this->submitForm($post, 'Save transaction type');
 
     // Checks the transactor options.
     $expected_plugin_configuration = [
@@ -154,7 +156,8 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
       // Execution control: ask user.
       'local_task' => TRUE,
     ];
-    $this->drupalPostForm('admin/config/workflow/transaction/edit/generic_workflow', $post, 'Save transaction type');
+    $this->drupalGet('admin/config/workflow/transaction/edit/generic_workflow');
+    $this->submitForm($post, 'Save transaction type');
 
     // Check that the option were saved.
     /** @var \Drupal\transaction\TransactionTypeInterface $transaction_type */
@@ -186,7 +189,7 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
       'description' => 'Transaction operation description',
       'details' => 'Details line line 1' . PHP_EOL . 'Details line line 2',
     ];
-    $this->drupalPostForm(NULL, $post, 'Save transaction operation');
+    $this->submitForm($post, 'Save transaction operation');
 
     // Check the creation message.
     $this->assertSession()->pageTextContains('Transaction operation Test operation has been added.');
@@ -210,7 +213,7 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
     // Go to the deletion.
     $this->drupalGet('admin/config/workflow/transaction/delete/generic_workflow');
     $this->assertSession()->pageTextContains('Are you sure you want to delete Generic workflow?');
-    $this->drupalPostForm(NULL, [], 'Delete');
+    $this->submitForm([], 'Delete');
 
     $this->assertSession()->pageTextContains('Transaction type Generic workflow deleted.');
     // Check there as no transaction type.

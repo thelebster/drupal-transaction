@@ -42,6 +42,7 @@ class TransactionService implements TransactionServiceInterface {
     // Search the last executed transaction.
     $storage = $this->entityTypeManager->getStorage('transaction');
     $result = $storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type', $transaction_type_id)
       ->condition('target_entity.target_type', $target_entity_type_id)
       ->condition('target_entity.target_id', $target_entity_id)

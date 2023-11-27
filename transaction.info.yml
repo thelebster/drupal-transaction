@@ -3,8 +3,7 @@ type: module
 description: 'Transactional operations over entities.'
 package: Workflow
 configure: entity.transaction_type.collection
-core: 8.x
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^8 || ^9 || ^10
 dependencies:
   - dynamic_entity_reference:dynamic_entity_reference
 test_dependencies:

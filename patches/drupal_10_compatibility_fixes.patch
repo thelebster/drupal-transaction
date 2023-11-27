@@ -1,0 +1,270 @@
+diff --git a/transaction/modules/transaction_ief/transaction_ief.info.yml b/transaction/modules/transaction_ief/transaction_ief.info.yml
+index c65ee63..6878f2d 100644
+--- a/transaction/modules/transaction_ief/transaction_ief.info.yml
++++ b/transaction/modules/transaction_ief/transaction_ief.info.yml
+@@ -2,8 +2,7 @@ name: 'Transaction inline entity form'
+ type: module
+ description: 'Integration between transaction and inline entity form modules. Provides a widget to create new transactions from the target entity form.'
+ package: Workflow
+-core: 8.x
+-core_version_requirement: ^8 || ^9
++core_version_requirement: ^8 || ^9 || ^10
+ dependencies:
+   - transaction:transaction
+   - inline_entity_form:inline_entity_form
+diff --git a/transaction/src/Event/TransactionExecutionEvent.php b/transaction/src/Event/TransactionExecutionEvent.php
+index 7bd0d05..5e540cb 100644
+--- a/transaction/src/Event/TransactionExecutionEvent.php
++++ b/transaction/src/Event/TransactionExecutionEvent.php
+@@ -2,8 +2,8 @@
+ 
+ namespace Drupal\transaction\Event;
+ 
++use Symfony\Contracts\EventDispatcher\Event;
+ use Drupal\transaction\TransactionInterface;
+-use Symfony\Component\EventDispatcher\Event;
+ 
+ /**
+  * Event that is fired when a transaction is executed.
+diff --git a/transaction/src/Form/TransactionTypeDeleteForm.php b/transaction/src/Form/TransactionTypeDeleteForm.php
+index 393c317..5062e5b 100644
+--- a/transaction/src/Form/TransactionTypeDeleteForm.php
++++ b/transaction/src/Form/TransactionTypeDeleteForm.php
+@@ -16,6 +16,7 @@ class TransactionTypeDeleteForm extends EntityConfirmFormBase {
+    */
+   public function buildForm(array $form, FormStateInterface $form_state) {
+     $transaction_count = $this->entityTypeManager->getStorage('transaction')->getQuery()
++      ->accessCheck(TRUE)
+       ->condition('type', $this->entity->id())
+       ->count()
+       ->execute();
+diff --git a/transaction/src/Plugin/RulesAction/LastTransactionFetch.php b/transaction/src/Plugin/RulesAction/LastTransactionFetch.php
+index 0517325..51453fc 100644
+--- a/transaction/src/Plugin/RulesAction/LastTransactionFetch.php
++++ b/transaction/src/Plugin/RulesAction/LastTransactionFetch.php
+@@ -15,7 +15,7 @@ use Drupal\Core\Entity\ContentEntityInterface;
+  *   id = "transaction_fetch_last_executed",
+  *   label = @Translation("Fetch the last executed transaction"),
+  *   category = @Translation("Transaction"),
+- *   context = {
++ *   context_definitions = {
+  *     "target_entity" = @ContextDefinition("entity",
+  *       label = @Translation("Target entity"),
+  *       description = @Translation("The target entity of the transaction to search for."),
+diff --git a/transaction/src/Plugin/RulesAction/TransactionExecute.php b/transaction/src/Plugin/RulesAction/TransactionExecute.php
+index e611a8e..f7035f9 100644
+--- a/transaction/src/Plugin/RulesAction/TransactionExecute.php
++++ b/transaction/src/Plugin/RulesAction/TransactionExecute.php
+@@ -15,7 +15,7 @@ use Drupal\transaction\TransactionInterface;
+  *   id = "transaction_execute",
+  *   label = @Translation("Execute a transaction"),
+  *   category = @Translation("Transaction"),
+- *   context = {
++ *   context_definitions = {
+  *     "transaction" = @ContextDefinition("entity:transaction",
+  *       label = @Translation("Transaction"),
+  *       description = @Translation("Specifies the transaction to execute."),
+diff --git a/transaction/src/TransactionListBuilder.php b/transaction/src/TransactionListBuilder.php
+index a51e138..8fd3e86 100644
+--- a/transaction/src/TransactionListBuilder.php
++++ b/transaction/src/TransactionListBuilder.php
+@@ -119,6 +119,7 @@ class TransactionListBuilder extends EntityListBuilder {
+    */
+   protected function getEntityIds() {
+     $query = $this->getStorage()->getQuery()
++      ->accessCheck(TRUE)
+       ->sort('execution_sequence', 'DESC')
+       ->sort('executed', 'DESC')
+       ->sort('created', 'DESC');
+diff --git a/transaction/src/TransactionOperationListBuilder.php b/transaction/src/TransactionOperationListBuilder.php
+index b5a847a..b54fb07 100644
+--- a/transaction/src/TransactionOperationListBuilder.php
++++ b/transaction/src/TransactionOperationListBuilder.php
+@@ -62,6 +62,7 @@ class TransactionOperationListBuilder extends ConfigEntityListBuilder {
+    */
+   protected function getEntityIds() {
+     $query = $this->getStorage()->getQuery()
++      ->accessCheck(TRUE)
+       ->condition('transaction_type', $this->transactionTypeId)
+       ->sort('id');
+ 
+diff --git a/transaction/src/TransactionService.php b/transaction/src/TransactionService.php
+index d5ab3dc..56229ea 100644
+--- a/transaction/src/TransactionService.php
++++ b/transaction/src/TransactionService.php
+@@ -42,6 +42,7 @@ class TransactionService implements TransactionServiceInterface {
+     // Search the last executed transaction.
+     $storage = $this->entityTypeManager->getStorage('transaction');
+     $result = $storage->getQuery()
++      ->accessCheck(TRUE)
+       ->condition('type', $transaction_type_id)
+       ->condition('target_entity.target_type', $target_entity_type_id)
+       ->condition('target_entity.target_id', $target_entity_id)
+diff --git a/transaction/src/TransactorHandler.php b/transaction/src/TransactorHandler.php
+index d81f0f5..b194729 100644
+--- a/transaction/src/TransactorHandler.php
++++ b/transaction/src/TransactorHandler.php
+@@ -152,7 +152,7 @@ class TransactorHandler implements TransactorHandlerInterface {
+       $transaction->setExecutor($executor ?: User::getAnonymousUser());
+ 
+       // Launch the transaction execution event.
+-      $this->eventDispatcher->dispatch(TransactionExecutionEvent::EVENT_NAME, new TransactionExecutionEvent($transaction));
++      $this->eventDispatcher->dispatch(new TransactionExecutionEvent($transaction), TransactionExecutionEvent::EVENT_NAME);
+ 
+       // Save the transaction.
+       if ($save) {
+@@ -273,6 +273,7 @@ class TransactorHandler implements TransactorHandlerInterface {
+     }
+ 
+     $result = $this->transactionStorage->getQuery()
++      ->accessCheck(TRUE)
+       ->condition('type', $transaction->getTypeId())
+       ->condition('target_entity.target_id', $transaction->getTargetEntityId())
+       ->condition('target_entity.target_type', $transaction->getType()->getTargetEntityTypeId())
+@@ -296,6 +297,7 @@ class TransactorHandler implements TransactorHandlerInterface {
+     }
+ 
+     $result = $this->transactionStorage->getQuery()
++      ->accessCheck(TRUE)
+       ->condition('type', $transaction->getTypeId())
+       ->condition('target_entity.target_id', $transaction->getTargetEntityId())
+       ->condition('target_entity.target_type', $transaction->getType()->getTargetEntityTypeId())
+diff --git a/transaction/tests/src/Functional/FunctionalTransactionTestBase.php b/transaction/tests/src/Functional/FunctionalTransactionTestBase.php
+index a2bf593..b1b07db 100644
+--- a/transaction/tests/src/Functional/FunctionalTransactionTestBase.php
++++ b/transaction/tests/src/Functional/FunctionalTransactionTestBase.php
+@@ -35,7 +35,7 @@ abstract class FunctionalTransactionTestBase extends BrowserTestBase {
+   /**
+    * {@inheritdoc}
+    */
+-  public function setUp() {
++  public function setUp(): void {
+     parent::setUp();
+ 
+     // Create a basic bundle on the entity test type.
+diff --git a/transaction/tests/src/Functional/TransactionAdminTest.php b/transaction/tests/src/Functional/TransactionAdminTest.php
+index 787fea6..b46feb0 100644
+--- a/transaction/tests/src/Functional/TransactionAdminTest.php
++++ b/transaction/tests/src/Functional/TransactionAdminTest.php
+@@ -22,7 +22,7 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
+   /**
+    * {@inheritdoc}
+    */
+-  public function setUp() {
++  public function setUp(): void {
+     parent::setUp();
+ 
+     // Create and log in an administrative user.
+@@ -70,7 +70,7 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
+     $transactor = 'transaction_generic';
+     $target_entity_type = 'entity_test';
+     $post = ['target_entity_type' => $target_entity_type, 'transactor' => $transactor];
+-    $this->drupalPostForm(NULL, $post, 'Continue');
++    $this->submitForm($post, 'Continue');
+ 
+     $label = 'Generic workflow';
+     $id = 'generic_workflow';
+@@ -78,15 +78,15 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
+       'label' => $label,
+       'id' => $id,
+     ];
+-    $this->drupalPostForm(NULL, $post, 'Create transaction type');
++    $this->submitForm($post, 'Create transaction type');
+ 
+     // Check the created transaction type values.
+     /** @var \Drupal\transaction\TransactionTypeInterface $transaction_type */
+     $transaction_type = TransactionType::load($id);
+     $this->assertNotNull($transaction_type);
+-    $this->assertEqual($transaction_type->label(), $label);
+-    $this->assertEqual($transaction_type->getTargetEntityTypeId(), $target_entity_type);
+-    $this->assertEqual($transaction_type->getPluginId(), $transactor);
++    $this->assertEquals($transaction_type->label(), $label);
++    $this->assertEquals($transaction_type->getTargetEntityTypeId(), $target_entity_type);
++    $this->assertEquals($transaction_type->getPluginId(), $transactor);
+ 
+     /** @var \Drupal\transaction\TransactorPluginInterface $transactor_plugin */
+     $transactor_plugin = $transaction_type->getPlugin();
+@@ -107,7 +107,8 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
+       'last_transaction_label' => 'Last transaction',
+       'last_transaction_field_name' => 'last_transaction',
+     ];
+-    $this->drupalPostForm('admin/config/workflow/transaction/edit/generic_workflow', $post, 'Save transaction type');
++    $this->drupalGet('admin/config/workflow/transaction/edit/generic_workflow');
++    $this->submitForm($post, 'Save transaction type');
+ 
+     // Check the log message field was created on the transaction type.
+     /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+@@ -128,7 +129,8 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
+       // Execution control: ask user.
+       'execution' => '3',
+     ];
+-    $this->drupalPostForm('admin/config/workflow/transaction/edit/generic_workflow', $post, 'Save transaction type');
++    $this->drupalGet('admin/config/workflow/transaction/edit/generic_workflow');
++    $this->submitForm($post, 'Save transaction type');
+ 
+     // Checks the transactor options.
+     $expected_plugin_configuration = [
+@@ -154,7 +156,8 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
+       // Execution control: ask user.
+       'local_task' => TRUE,
+     ];
+-    $this->drupalPostForm('admin/config/workflow/transaction/edit/generic_workflow', $post, 'Save transaction type');
++    $this->drupalGet('admin/config/workflow/transaction/edit/generic_workflow');
++    $this->submitForm($post, 'Save transaction type');
+ 
+     // Check that the option were saved.
+     /** @var \Drupal\transaction\TransactionTypeInterface $transaction_type */
+@@ -186,7 +189,7 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
+       'description' => 'Transaction operation description',
+       'details' => 'Details line line 1' . PHP_EOL . 'Details line line 2',
+     ];
+-    $this->drupalPostForm(NULL, $post, 'Save transaction operation');
++    $this->submitForm($post, 'Save transaction operation');
+ 
+     // Check the creation message.
+     $this->assertSession()->pageTextContains('Transaction operation Test operation has been added.');
+@@ -210,7 +213,7 @@ class TransactionAdminTest extends FunctionalTransactionTestBase {
+     // Go to the deletion.
+     $this->drupalGet('admin/config/workflow/transaction/delete/generic_workflow');
+     $this->assertSession()->pageTextContains('Are you sure you want to delete Generic workflow?');
+-    $this->drupalPostForm(NULL, [], 'Delete');
++    $this->submitForm([], 'Delete');
+ 
+     $this->assertSession()->pageTextContains('Transaction type Generic workflow deleted.');
+     // Check there as no transaction type.
+diff --git a/transaction/tests/src/Kernel/KernelTransactionTestBase.php b/transaction/tests/src/Kernel/KernelTransactionTestBase.php
+index 5009e48..675a82b 100644
+--- a/transaction/tests/src/Kernel/KernelTransactionTestBase.php
++++ b/transaction/tests/src/Kernel/KernelTransactionTestBase.php
+@@ -19,7 +19,7 @@ abstract class KernelTransactionTestBase extends KernelTestBase {
+   /**
+    * {@inheritdoc}
+    */
+-  public static $modules = [
++  protected static $modules = [
+     'system',
+     'user',
+     'filter',
+@@ -75,7 +75,7 @@ abstract class KernelTransactionTestBase extends KernelTestBase {
+   /**
+    * {@inheritdoc}
+    */
+-  protected function setUp() {
++  protected function setUp(): void {
+     parent::setUp();
+ 
+     $this->installEntitySchema('entity_test');
+diff --git a/transaction/transaction.info.yml b/transaction/transaction.info.yml
+index fe9e1bc..fd476ef 100644
+--- a/transaction/transaction.info.yml
++++ b/transaction/transaction.info.yml
+@@ -3,8 +3,7 @@ type: module
+ description: 'Transactional operations over entities.'
+ package: Workflow
+ configure: entity.transaction_type.collection
+-core: 8.x
+-core_version_requirement: ^8 || ^9
++core_version_requirement: ^8 || ^9 || ^10
+ dependencies:
+   - dynamic_entity_reference:dynamic_entity_reference
+ test_dependencies:

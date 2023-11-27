@@ -152,7 +152,7 @@ class TransactorHandler implements TransactorHandlerInterface {
       $transaction->setExecutor($executor ?: User::getAnonymousUser());
 
       // Launch the transaction execution event.
-      $this->eventDispatcher->dispatch(TransactionExecutionEvent::EVENT_NAME, new TransactionExecutionEvent($transaction));
+      $this->eventDispatcher->dispatch(new TransactionExecutionEvent($transaction), TransactionExecutionEvent::EVENT_NAME);
 
       // Save the transaction.
       if ($save) {
@@ -273,6 +273,7 @@ class TransactorHandler implements TransactorHandlerInterface {
     }
 
     $result = $this->transactionStorage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type', $transaction->getTypeId())
       ->condition('target_entity.target_id', $transaction->getTargetEntityId())
       ->condition('target_entity.target_type', $transaction->getType()->getTargetEntityTypeId())
@@ -296,6 +297,7 @@ class TransactorHandler implements TransactorHandlerInterface {
     }
 
     $result = $this->transactionStorage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type', $transaction->getTypeId())
       ->condition('target_entity.target_id', $transaction->getTargetEntityId())
       ->condition('target_entity.target_type', $transaction->getType()->getTargetEntityTypeId())

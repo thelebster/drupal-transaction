@@ -2,8 +2,8 @@
 
 namespace Drupal\transaction\Event;
 
+use Symfony\Contracts\EventDispatcher\Event;
 use Drupal\transaction\TransactionInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Event that is fired when a transaction is executed.

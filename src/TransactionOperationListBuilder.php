@@ -62,6 +62,7 @@ class TransactionOperationListBuilder extends ConfigEntityListBuilder {
    */
   protected function getEntityIds() {
     $query = $this->getStorage()->getQuery()
+      ->accessCheck(TRUE)
       ->condition('transaction_type', $this->transactionTypeId)
       ->sort('id');
 
